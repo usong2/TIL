@@ -89,6 +89,16 @@
 
 <br />
 
+<blockquote>MVVM 패턴이란?</blockquote>
+
+<div style="border: 1px solid #ccc;padding: 20px;color: #999;">마크업 언어나 GUI 코드를 비즈니스 로직 또는 백엔드 로직과 분리하여 개발하는 소프트웨어 디자인 패턴<br />
+<span style="display: block;text-align: right;font-size: 0.8em;font-style: italic">- 위키피디아 -</span>
+</div>
+
+<p>즉, <span style="text-decoration: underline">화면 앞단(프론트엔드)의 화면 동작과 관련된 로직과 화면 뒷단(백엔드)의 데이터베이스 데이터 처리 로직을 분리하여 더 깔끔하게 코드를 구성한다</span>는 것입니다.</p>
+
+
+
 <blockquote>리액트와 앵귤러의 장점을 가진 프레임워크</blockquote>
 
 <p>뷰는 앵귤러의 양방향 데이터 바인딩(Two-way Data Binding)과 리액트의 단방향 데이터 흐름(One-way Data Flow)의 장점을 모두 결합한 프레임워크입니다. 양방향 데이터 바인딩이란 화면에 표시되는 값과 프레임워크의 모델 데이터 값이 동기화되어 한쪽이 변경되면 다른 한쪽도 자동으로 변경되는 것을 말합니다. 단방향 데이터 흐름은 컴포넌트의 단방향 통신을 의미합니다. 컴포넌트 간에 데이터를 전달할 때 항상 상위 컴포넌트에서 하위 컴포넌트 한 방향으로만 전달하게끔 프레임워크가 구조화되어 있는 게 바로 단방향 데이터 흐름입니다.<br />
