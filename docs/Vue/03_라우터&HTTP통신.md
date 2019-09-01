@@ -102,8 +102,6 @@
 
 네스티드 라우터(Nested Router)는 라우터로 페이지를 이동할 때 최소 2개 이상의 컴포넌트를 화면에 나타낼 수 있습니다. 네스티드라는 단어에서 추측할 수 있듯이 상위 컴포넌트 1개에 하위 컴포넌트 1개를 포함하는 구조로 구성합니다. 
 
-<br />
-
 > 네스티드라우터 구현
 
 ```vue
@@ -158,3 +156,53 @@
 3. `routes`에 라우터 정보를 정의합니다. 제일 먼저 path 속성에는 네스티드 라우터를 실행하는 기본 URL을 /user로 설정하고, 상위 컴포넌트는 User 컴포넌트로 지정합니다. 그런 다음 children 속성에는 URL 값 /user 다음에 올 URL에 따라 표시될 하위 컴포넌트를 정의합니다. /user/posts인 경우 UserPost를 표시하고, /user/profile인 경우 UserProfile을 표시하도록 설정합니다. 
 4. 이제 뷰 라우터를 새로 하나 생성하고 앞에서 정의한 라우터 정보를 담은 객체 routes를 정의합니다. 
 5. 마지막으로 인스턴스를 하나 생성하고 라우터 정보 router를 포함합니다. 그리고 app이라는 id를 가진 요소에 인스턴스를 붙여 화면에 나타냅니다. 
+
+<br />
+
+### 네임드 뷰
+
+네임드 뷰(Named View)는 특정 페이지로 이동했을 때 여러 개의 컴포넌트를 동시에 표시하는 라우팅 방식입니다. 앞에서 다룬 네스티드 라우터는 상위 컴포넌트가 하위 컴포넌트를 포함하는 형식이지만 네임드 뷰는 같은 레벨에서 여러 개의 컴포넌트를 한 번에 표시합니다. 
+
+> 네임드뷰 구현
+
+```vue
+
+<div id="app">
+  <router-view name="header"></router-view>
+  <router-view></router-view>
+  <router-view name="footer"></router-view>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.2/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router@3.1.3/dist/vue-router.js"></script>
+
+<script>
+  var Body = { template: '<div>This is Body</div>' };
+  var Header = { template: '<div>This is Header</div>' };
+  var Footer = { template: '<div>This is Footer</div>' };
+
+  var router = new VueRouter({
+    routes: [
+      {
+        path: '/',
+        components: {
+          default: Body,
+          header: Header,
+          footer: Footer
+        }
+      }
+    ]
+  });
+
+  var app = new Vue({
+    router
+  }).$mount('#app');
+</script>
+```
+
+1. `<div>`태그 안에 &lt;router-view&gt;를 3개 추가하고 name 속성을 추가합니다. 여기서 name 속성은 아래 components 속성에 정의하는 컴포넌트와 매칭하기 위한 속성입니다. Header 컴포넌트는 header, Footer 컴포넌트는 footer를 각각 name 속성에 값으로 지정합니다. 그리고 name 속성이 없는 두 번째 &lt;router-view&gt;는 default로 표시될 컴포넌트를 의미합니다. 
+2. 이제 &lt;script&gt;로 넘어가서 Body, Header, Footer 컴포넌트의 내용이 담길 객체를 선언합니다. 각 컴포넌트 내용에는 컴포넌트 영역이 구분될 수 있게 간단한 template 속성을 추가합니다. 
+3. 그리고 앞의 네스티드 라우터 예제 코드와는 다르게 이번에는 new VueRouter()로 라우터를 하나 생성하고 라우터 정보를 바로 그 안에 정의합니다. 
+4. path는 네임드 뷰가 실행될 URL을 정의하는 속성입니다. 여기서는 애플리케이션을 실행하면 마주치는 기본 URL값 '/'를 지정합니다. 
+5. components는 앞에서 &lt;router-view&gt;에 정의한 name 속성에 따라 표시될 컴포넌트를 정의하는 속성입니다. 
+6. 마지막으로 인스턴스를 생성하고 네임드 뷰 정보를 갖고 있는 라우터를 포함합니다. 
