@@ -96,3 +96,65 @@
 </script>
 ```
 
+<br />
+
+### 네스티드 라우터
+
+네스티드 라우터(Nested Router)는 라우터로 페이지를 이동할 때 최소 2개 이상의 컴포넌트를 화면에 나타낼 수 있습니다. 네스티드라는 단어에서 추측할 수 있듯이 상위 컴포넌트 1개에 하위 컴포넌트 1개를 포함하는 구조로 구성합니다. 
+
+<br />
+
+> 네스티드라우터 구현
+
+```vue
+<div id="app">
+  <router-view></router-view>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.2/dist/vue.js"></script>
+<script src="https://unpkg.com/vue-router@3.1.3/dist/vue-router.js"></script>
+
+<script>
+  var User = {
+    template: `
+      <div>
+        User Component
+        <router-view></router-view>
+      </div>
+    `
+  };
+  var UserProfile = { template: '<p>User Profile Component</p>' };
+  var UserPost = { template: '<p>User Post Component</p>' };
+
+  var routes = [
+    {
+      path: '/user',
+      component: User,
+      children: [
+        {
+          path: 'posts',
+          component: UserPost
+        },
+        {
+          path: 'profile',
+          component: UserProfile
+        }
+      ]
+    }
+  ];
+
+  var router = new VueRouter({
+    routes
+  });
+
+  var app = new Vue({
+    router
+  }).$mount('#app');
+</script>
+```
+
+1. `<div id="app">`에 &lt;router-view&gt;를 등록하여 User 컴포넌트가 뿌려질 영역을 정의합니다.
+2. User, UserPost, UserProfile 컴포넌트의 내용을 각 객체에 정의합니다. 컴포넌트가 전환된 것을 확인할 수 있게 template 속성을 컴포넌트 내용에 추가하였습니다. 여기서 주목할 부분은 User 컴포넌트의 template에 하위 컴포넌트를 표시할 &lt;router-view&gt;가 하나 더 있다는 점입니다. 
+3. `routes`에 라우터 정보를 정의합니다. 제일 먼저 path 속성에는 네스티드 라우터를 실행하는 기본 URL을 /user로 설정하고, 상위 컴포넌트는 User 컴포넌트로 지정합니다. 그런 다음 children 속성에는 URL 값 /user 다음에 올 URL에 따라 표시될 하위 컴포넌트를 정의합니다. /user/posts인 경우 UserPost를 표시하고, /user/profile인 경우 UserProfile을 표시하도록 설정합니다. 
+4. 이제 뷰 라우터를 새로 하나 생성하고 앞에서 정의한 라우터 정보를 담은 객체 routes를 정의합니다. 
+5. 마지막으로 인스턴스를 하나 생성하고 라우터 정보 router를 포함합니다. 그리고 app이라는 id를 가진 요소에 인스턴스를 붙여 화면에 나타냅니다. 
