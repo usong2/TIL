@@ -221,4 +221,45 @@
 
 웹 앱 HTTP 통신의 대표적인 사례로는 제이쿼리(jQuery)의 ajax가 있습니다. ajax는 서버에서 받아온 데이터를 표시할 때 화면 전체를 갱신하지 않고도 화면의 일부분만 변경할 수 있게 하는 자바스크립트 기법입니다. ajax가 대중화되면서 많은 웹 앱에서 ajax를 사용하고 있습니다. 리액트, 앵귤러 등에서도 활발하게 사용하고 있죠. <br />
 
-뷰에서도 마찬가지로 ajax를 지원하기 위한 라이브러리를 제공합니다. 뷰 프레임워크의 필수 라이브러리로 관리하던 뷰 리소스와 요즘 가장 많이 사용하는 액시오스(axios)가 바로 그것입니다. 
+뷰에서도 마찬가지로 ajax를 지원하기 위한 라이브러리를 제공합니다. 뷰 프레임워크의 필수 라이브러리로 관리하던 뷰 리소스와 요즘 가장 많이 사용하는 액시오스(axios)가 바로 그것입니다. <br /><br />
+
+### 뷰 리소스
+
+뷰 리소스(resource)는 초기에 코어 팀에서 공식적으로 권하는 라이브러리였으나 2016년 말에 에반이 공식적인 지원을 중단하기로 결정하면서 다시 기존에 관리했던 PageKit 팀의 라이브러리로 돌아갔습니다. 그 이유는 HTTP 통신 관련 라이브러리는 뷰 라우팅, 상태 관리와 같은 라이브러리와는 다르게 프레임워크에 필수적인 기능이 아니라고 판단했기 때문입니다. 그럼에도 불구하고 뷰 리소스는 아직 계속 사용할 수 있는 라이브러리이기 때문에 간단히 살펴보겠습니다. <br />
+
+뷰 리소스를 사용하는 방법은 CDN을 이용해서 라이브러리를 로딩하는 방식과 NPM으로 라이브러리를 설치하는 방법(ES6 기준)이 있습니다.<br />
+
+*ES6 설치 방법은 [https://github.com/pagekit/vue-resource#installation](https://github.com/pagekit/vue-resource#installation)을 참고하세요.
+
+```vue
+<div id="app">
+  <button v-on:click="getData">프레임워크 목록 가져오기</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.2/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.4"></script>
+
+<script>
+  new Vue({
+    el: '#app',
+    methods: {
+      getData: function() {
+        this.$http.get('https://raw.githubusercontent.com/joshua1988/doit-vuejs/master/data/demo.json')
+          .then(function(response){
+            console.log(response);
+            console.log(JSON.parse(response.data));
+          });
+      }
+    }
+  });
+</script>
+```
+
+이 코드를 버튼을 하나 추가하고 클릭하면 지정한 URL의 데이터를 가져오는 예제입니다. 여기서 불러오는 데이터는 JSON 형식의 간단한 파일이며 '프레임워크 종류 - 프레임워크 이름' 형태의 '키 - 쌍' 조합으로 총 7개의 데이터 쌍으로 되어 있습니다. 
+
+1. 먼저 버튼은 인스턴스 영역 안인 &lt;div&gt; 태그 안에  &lt;button&gt; 태그로 추가합니다. 그리고 v-on:click을 이용하여 버튼을 클릭했을 때 getData()가 호출되도록 클릭 이벤트를 설정합니다. 
+2. getData()에는 뷰 리소스에서 제공하는 API인 this.$http.get()을 사용하여 해당 URL에서 제공하는 데이터를 받아옵니다. API 이름에서 유추할 수 있듯이 this.$http.get()은 HTTP GET 요청을 서버에 보내고 특정 데이터를 받아옵니다. 
+3. 그리고 버튼을 클릭하여 해당 URL로 HTTP GET 요청을 보내고 .then() 안에서 응답을 받은 데이터 response를 콘솔에 출력합니다. 
+
+
+
