@@ -1,5 +1,5 @@
-<h1>Vue.js 소개</h1>
-<h2>01. Vue.js란 무엇인가?</h2>
+<h1>Vue.js</h1>
+<h2>Vue.js란 무엇인가?</h2>
 <blockquote>Vue.js란?</blockquote>
 <p>Vue.js는 웹 페이지 화면을 개발하기 위한 프론트엔드 프레임워크로 기존 웹 개발자뿐만 아니라 HTML, CSS, 자바스크립트 기초만 아는 웹 개발 입문자 및 컴퓨터 비전공자들도 배우기 쉽게 만들어졌습니다. <br />뷰는 화면단 라이브러리이자 프레임워크라고도 볼 수 있습니다. </p>
 <div><img src="https://t1.daumcdn.net/cfile/tistory/99BAF4375C7CB2EB2D" alt="점진적인 프레임워크로서의 뷰의 의미" style="display: block;width: 450px;border: 1px solid #ccc;" /></div>
@@ -22,7 +22,7 @@
 
 <blockquote>뷰가 리액트와 앵귤러보다 배우기 쉬운 이유</blockquote>
 <p>앵귤러1은 프레임워크로서 완전한 기능을 제공하는 MVC 구조로 출발하여 컴포넌트 기반의 앵귤러2로 진화하였습니다. 이 과정에서 타입스크립트(TypeScript), ES6(ECMAScript 2015)  등 기타 어느 프레임워크보다 더 많은 학습이 필요하게 되었죠. 리액트 또한 입문자가 학습하기에는 ES6와 JSX라는 무시무시한 장벽이 존재합니다. 게다가 ES7, 웹팩(Webpack) 등 신기술이 마구 튀어나오고 있는 상황에서 웹 개발자에게 주어지는 점점 더 무거워집니다. 따라서 쉽게 배울 수 있는 뷰의 등장이 참 반갑다고 할 수 있습니다.</p><br /><hr />
-<h2>02. Vue.js의 특징</h2>
+<h2>Vue.js의 특징</h2>
 <blockquote>UI 화면단 라이브러리</blockquote>
 <p>뷰(Vue.js)는 UI화면 개발 방법 중 하나인 MVVM 패턴의 뷰 모델(ViewModel)에 해당하는 화면단 라이브러리입니다.</p>
 <div><img src="https://012.vuejs.org/images/mvvm.png" alt="MVVM 구조에서의 Vue.js 위치" style="display: block;border: 1px solid #ccc;width: 500px;"/></div>
