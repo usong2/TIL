@@ -261,5 +261,110 @@
 2. getData()에는 뷰 리소스에서 제공하는 API인 this.$http.get()을 사용하여 해당 URL에서 제공하는 데이터를 받아옵니다. API 이름에서 유추할 수 있듯이 this.$http.get()은 HTTP GET 요청을 서버에 보내고 특정 데이터를 받아옵니다. 
 3. 그리고 버튼을 클릭하여 해당 URL로 HTTP GET 요청을 보내고 .then() 안에서 응답을 받은 데이터 response를 콘솔에 출력합니다. 
 
+<br />
+
+### 액시오스
+
+액시오스(Axios)는 뷰 리소스보다 더 안정적으로 지원되며 현재 뷰 커뮤니티에서 가장 많이 사용되는 HTTP 통신 라이브러리입니다. Promise 기반의 API 형식이 다양하게 제공되어 별도의 로직을 구현할 필요 없이 주어진 API만으로도 간편하게 원하는 로직을 구현할 수 있습니다. 
+
+> Promise 기반의 API 형식
+>
+> > Promise란 서버에 데이터를 요청하여 받아오는 동작과 같은 비동기 로직 처리에 유용한 자바스크립트 객체입니다. 자바스크립트는 단일 스레도(thread)로 코드를 처리하기 때문에 특정 로직의 처리가 끝날 때까지 기다려주지 않습니다. 따라서 데이터를 요청하고 받아올 때까지 기다렸다가 화면에 나타내는 로직을 실행해야 할 때 주로 Promise를 활용합니다. 그리고 데이터를 받아왔을 때 Promise로 데이터를 화면에 표시하거나 연산을 수행하는 등 특정 로직을 수행합니다. <br />
+> >
+> > 데이터 통신과 관련한 여러 라이브러리 대부분에서 Promise를 활용하고 있으며, 액시오스에서도 Promise 기반의 API를 지원합니다.
+
+<br />액시오스 공식 깃허브 리포지토리(https://github.com/axios/axios)에서 안내하는 문서 역시 뷰 리소스보다 더 상세하게 기술되어 있습니다. 따라서 원하는 기능에 대해 손쉽게 API 형식과 코드 예제를 참고할 수 있습니다. <br /><br />
+
+#### 액시오스 설치 및 사용하기
+
+1. <b>NPM</b>
+
+   *해당 링크 참조 : https://github.com/axios/axios/#installing<br />
+
+2. <b>CDN</b>
+
+   ```vue
+   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+   ```
+
+액시오스는 뷰 리소스처럼 HTTP 통신에 대해 간단하고 직관적인 API를 제공합니다. 그리고 API 형식이 다양하여 단순한 호출 이외에도 여러 설정 값을 추가하여 함께 호출할 수 있습니다. 
+
+```javascript
+//HTTP GET 요청
+axios.get('URL 주소').then().catch();
+```
+
+```javascript
+//HTTP POST 요청
+axios.post('URL 주소').then().catch();
+```
+
+```javascript
+//HTTP 요청에 대한 옵션 속성 정의
+axios({
+    method: 'get',
+    url: 'URL 주소',
+    ...
+})
+```
+
+<table>
+    <colgroup>
+    	<col width="45%"/>
+        <col width="*" />
+    </colgroup>
+    <thead>
+    	<tr>
+        	<th>API 유형</th>
+            <th>처리 결과</th>
+        </tr>
+    </thead>
+    <tbody>
+    	<tr>
+        	<td>axios.get('URL 주소').then().catch()</td>
+            <td>해당 URL 주소에 대해 HTTP GET 요청을 보냅니다. 서버에서 보낸 데이터를 정상적으로 받아오면 <br />then() 안에 정의한 로직이 실행되고, 데이터를 받아올 때 오류가 발생하면 catch()에 정의한 로직이 수행됩니다. </td>
+        </tr>
+        <tr>
+        	<td>axios.post('URL 주소').then().catch()</td>
+            <td>해당 URL 주소에 대해서 HTTP POST 요청을 보냅니다. then()과 catch()의 동작은 위에서 살펴본 내용과 동일합니다. </td>
+        </tr>
+        <tr>
+        	<td>axios({ 옵션 속성 })</td>
+            <td>HTTP 요청에 대한 자세한 속성들을 직접 정의하여 보낼 수 있습니다. 데이터 요청을 보낼 URL, HTTP 요청 방식, 보내는 데이터 유형, 기타 등등.</td>
+        </tr>
+    </tbody>
+</table>
+
+- 더 많은 API 형식 참고 https://github.com/axios/axios#axios-api
+
+<br />
+
+> 엑시오스로 데이터 받아오기
+
+```vue
+<div id="app">
+    <button v-on:click="getData">프레임워크 목록 가져오기</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.2/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: '#app',
+        methods: {
+            getData: function() {
+                axios.get('https://raw.githubusercontent.com/joshua1988/doit-vuejs/master/data/demo.json')
+                .then(function(response){
+                    console.log(response);
+                });
+            }
+        }
+    });
+</script>
+```
+
+response 객체를 확인해보면 data 속성이 일반 문자열 형식이 아닌 객체 형태이기 때문에 별도로 JSON.parse()를 사용하여 객체로 변환할 필요가 없습니다. 이런 부분들이 뷰 액시오스가 뷰 리소스보다 사용성이 좋다는 것을 증명해 줍니다. 
+
 
 
