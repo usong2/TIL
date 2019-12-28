@@ -12,8 +12,6 @@
   "Hello" + "JavaScript"	// "HelloJavaScript"
   ```
 
-  <br>
-
 + 표현식은 값을 만들어내기 때문에 함수의 인자로 사용할 수 있습니다.
 
   ```javascript

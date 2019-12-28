@@ -5,8 +5,6 @@
 + ECMA International : 자바스크립트 문법 표준화 및 관리 
   [https://www.ecma-international.org/publications/standards/Ecma-262.htm](https://www.ecma-international.org/publications/standards/Ecma-262.htm)
 
-<br>
-
 ## ECMAScript
 
 + 2009 ECMA-262 (ES 5)
