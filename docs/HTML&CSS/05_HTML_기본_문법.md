@@ -359,3 +359,23 @@ JS는 `<script></script>`로 이 2가지 방식을 모두 사용할 수 있습�
 
 위 표에서 '(필수)'라고 되어 있는 속성들(`src`, `alt`)은 `<img>`를 사용할 때 반드시 포함되어야 할 속성(필수 속성, Required Attributes)입니다. 
 만약 `<img src="./kitty.png">`라고 작성하여 `alt` 속성이 누락되었따면 이는 웹 표준에 어긋납니다. 
+
+
+
+## 웹 표준 검사하기
+
+우리가 작성한 HTML 문서가 표준에 부합하는지 테스트를 해볼 수 있습니다. 
+[W3C validator](https://validator.w3.org/#validate_by_upload)에 접속하여 작성한 HTML 문서를 업로드하고 테스트를 시작하세요! 
+기본적인 표준 여부를 판단할 수 있습니다. 
+
+![결과값](https://heropy.blog/images/screenshot/html-css-starter/markup%20_validation_result_image_kytty.jpg)
+
+위에서 `<img src="./kitty.png">`라고 작성했을 때 나오는 결과입니다. 
+HTML 문서를 작성하면서 지켜야하는 이러한 규칙들이 많이 있습니다. 
+
+> 테스트 통과과 웹 표준/웹 접근성의 준수 여부를 최종적으로 결정하진 않습니다. 이 테스트는 사실 기본 문법 검사에 가깝습니다. 
+
+또는 사이트(페이지) 주소로 검사할 수도 있습니다. 
+다음은 **naver.com**을 검사한 결과입니다. 
+
+![naver.com 검사 결과](https://heropy.blog/images/screenshot/html-css-starter/markup%20_validation_result_naver_com.jpg)
