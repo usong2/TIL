@@ -156,3 +156,22 @@ HTML 문서의 범위를 나타내는(의미하는) 태그들을 알아봅시다
 </html>
 ```
 
+### DOCTYPE(DTD, 버전 지정)
+
+DOCTYPE(DTD, Document Type Definition)은 마크업 언어에서 문서 형식을 정의합니다. 
+이는 웹 브라우저에 우리가 제공할 HTML 문서를 어떤 HTML 버전의 해석 방식으로 구조화하면 되는지 알려줍니다. (HTML은 크게 1, 2, 3, 4, X-, 5 버전이 있습니다.)
+
+현재의 표준 모드는 HTML5 입니다. 
+
+```html
+<!-- HTML 5 -->
+<!DOCTYPE html>
+
+<!-- XHTML 1.0 Transitional -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+```
+
+[더 많은 문서형 정보 보기](https://en.wikipedia.org/wiki/Document_type_declaration)
+
+> Windows 운영체제가 95, 98, ME, XP, Vista, 7, 8, 10 버전이 있는 것과 비슷하다고 생각하시면 쉽습니다. 
+
