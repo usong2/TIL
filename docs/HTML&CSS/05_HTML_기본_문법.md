@@ -379,3 +379,50 @@ HTML 문서를 작성하면서 지켜야하는 이러한 규칙들이 많이 있
 다음은 **naver.com**을 검사한 결과입니다. 
 
 ![naver.com 검사 결과](https://heropy.blog/images/screenshot/html-css-starter/markup%20_validation_result_naver_com.jpg)
+
+
+
+## HTML 예제
+
+다음 이미지는 [GitHub](https://github.com/) 메인 페이지의 일부입니다.(이 예제에 사용된 이미지는 예전 메인 페이지의 모습입니다)
+이 페이지의 일부를 HTML로 코딩해 봅시다. 
+
+> 완성된 페이지([https://heropcode.github.io/GitHub-Responsive/](https://heropcode.github.io/GitHub-Responsive/))를 공유합니다. GitHub 메인의 클론 페이지입니다. 
+
+![GitHub 메인 페이지 클론](https://heropy.blog/images/screenshot/html-css-starter/guthub_clone_page.jpg)
+
+
+
++ Header 내용의 일부 구조 정리
+
+  바탕화면 같은 익숙한 곳에서 `example1`이라는 이름의 프로젝트 디렉터리(폴더)를 생성합니다.(이름은 원하는 대로 자유롭게 지정)
+  VS Code를 실행해 `파일/열기`를 선택해 생성한 디렉터리를 찾아 오픈합니다. 
+  그 안에 `index.html`이라는 파일을 생성합니다.(`파일/새파일` > `저장` > 이름과 확장자 설정)
+  다음 코드와 위 구조를 비교하며 코딩해 보세요. 
+
+  ```html
+  <!DOCTYPE html>
+  <html lang="ko">
+  <head>
+      <meta charset="UTF-8">
+      <title>GitHub</title>
+  </head>
+  <body>
+      <div class="header">
+          <div class="container">
+              <div class="container-left">
+                  <div class="logo">
+                      <img src="https://heropcode.github.io/GitHub-Responsive/img/logo.svg" alt="GitHub Logo">
+                  </div>
+                  <div class="menu">
+                      <div class="menu-item">Personal</div>
+                      <div class="menu-item">Open Source</div>
+                      <div class="menu-item">Business</div>
+                      <div class="menu-item">Explore</div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </body>
+  </html>
+  ```
