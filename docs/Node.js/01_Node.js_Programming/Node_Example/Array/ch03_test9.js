@@ -1,0 +1,13 @@
+let Users = [
+  { name: "윳홍이", age: 28 },
+  { name: "뀨", age: 7 }
+];
+
+let add = function(a, b) {
+  return a + b;
+};
+
+Users.push(add);
+
+console.log("배열 요소의 수 : %d", Users.length);
+console.log("세 번째 요소로 추가된 함수 실행 : %d", Users[2](10, 10));
