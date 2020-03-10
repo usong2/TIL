@@ -1,6 +1,6 @@
 # Template, View 만들기
 
-## django Template, View 만들기
+## django Template, View 만들기(1)
 
 + community/user/templates에 register.html 생성
 
@@ -79,7 +79,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -96,5 +96,85 @@ from . import views
 urlpatterns = [
     path('register/', views.register),
 ]
+```
+
++ http://127.0.0.1:8000/user/register 확인
+
+<br>
+
+## django Template, View 만들기(2)
+
++ community/user/templates/register.html 수정
+
+```html
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-12 text-center">
+                    <h1>회원가입</h1>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-12">
+                    <form method="POST" action=".">
+                      {% csrf_token %}
+                      <div class="form-group">
+                        <label for="username">사용자 이름</label>
+                        <input type="text" class="form-control" id="username" placeholder="사용자 이름" name="username">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                      </div>
+                      <div class="form-group">
+                        <label for="password">비밀번호</label>
+                        <input type="password" class="form-control" id="password" placeholder="비밀번호" name="password">
+                      </div>
+                        <div class="form-group">
+                        <label for="re-password">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="re-password" placeholder="비밀번호 확인" name="re-password">
+                      </div>
+                      <button type="submit" class="btn btn-primary">등록</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+```
+
++ community/user/views.py 수정
+
+```python
+from django.shortcuts import render
+from .models import User
+
+# Create your views here.
+
+def register(request):
+    if request.method == 'GET':
+    	return render(request, 'register.html')
+    elif request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        re_password = request.POST['re-password']
+        
+        User = User(
+        	username=username,
+            password=password
+        )
+        
+        User.save()
+        
+        return render(request, 'register.html')
 ```
 
