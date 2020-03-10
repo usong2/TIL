@@ -168,12 +168,12 @@ def register(request):
         password = request.POST['password']
         re_password = request.POST['re-password']
         
-        User = User(
+        user = User(
         	username=username,
             password=password
         )
         
-        User.save()
+        user.save()
         
         return render(request, 'register.html')
 ```
