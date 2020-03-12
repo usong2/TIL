@@ -104,6 +104,8 @@ urlpatterns = [
 
 ## django Template, View 만들기(2)
 
+### 비밀번호 확인
+
 + community/user/templates/register.html 수정
 
 ```html
@@ -155,6 +157,7 @@ urlpatterns = [
 + community/user/views.py 수정
 
 ```python
+from django.http import HttpResponse
 from django.shortcuts import render
 from .models import User
 
@@ -168,6 +171,11 @@ def register(request):
         password = request.POST['password']
         re_password = request.POST['re-password']
         
+        res_data = {}
+        if password != re_password:
+            # return HttpResponse('비밀번호가 다릅니다!')
+            res_data['error'] = '비밀번호가 다릅니다!'
+        
         user = User(
         	username=username,
             password=password
@@ -175,6 +183,119 @@ def register(request):
         
         user.save()
         
-        return render(request, 'register.html')
+        return render(request, 'register.html', res_data)
+```
+
++ community/user/templates/register.html에서 res_data를 전달하기 위해 수정
+
+```html
+...
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-12 text-center">
+                    <h1>회원가입</h1>
+                </div>
+            </div>
+            <div class="row mt-5"> <!-- error 메세지 추가 -->
+                <div class="col-12 text-center">
+                    {{ error }}
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-12">
+                    <form method="POST" action=".">
+                      {% csrf_token %}
+                      <div class="form-group">
+                        <label for="username">사용자 이름</label>
+                        <input type="text" class="form-control" id="username" placeholder="사용자 이름" name="username">
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                      </div>
+                      <div class="form-group">
+                        <label for="password">비밀번호</label>
+                        <input type="password" class="form-control" id="password" placeholder="비밀번호" name="password">
+                      </div>
+                        <div class="form-group">
+                        <label for="re-password">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="re-password" placeholder="비밀번호 확인" name="re-password">
+                      </div>
+                      <button type="submit" class="btn btn-primary">등록</button>
+                    </form>
+                </div>
+            </div>
+```
+
+<br>
+
+### 비밀번호 암호화
+
++ community/user/views.py 수정
+
+```python
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.contrib.auth.hashers import make_password
+from .models import User
+
+# Create your views here.
+
+def register(request):
+    if request.method == 'GET':
+    	return render(request, 'register.html')
+    elif request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        re_password = request.POST['re-password']
+        
+        res_data = {}
+        if password != re_password:
+            res_data['error'] = '비밀번호가 다릅니다!'
+        
+        user = User(
+        	username=username,
+            password=make_password(password)
+        )
+        
+        user.save()
+        
+        return render(request, 'register.html', res_data)
+```
+
+<br>
+
+### 비밀번호 미입력 예외처리
+
++ community/user/views.py 수정
+
+```python
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.contrib.auth.hashers import make_password
+from .models import User
+
+# Create your views here.
+
+def register(request):
+    if request.method == 'GET':
+    	return render(request, 'register.html')
+    elif request.method == 'POST':
+        username = request.POST.get('username', None)
+        password = request.POST.get('password', None)
+        re_password = request.POST.get('re-password', None)
+        
+        res_data = {}
+        
+        if not (username and password and re_password):
+            res_data['error'] = '모든 값을 입력해야합니다.'
+        elif password != re_password:
+            res_data['error'] = '비밀번호가 다릅니다!'
+        else:
+            user = User(
+                username=username,
+                password=make_password(password)
+            )
+
+            user.save()
+        
+        return render(request, 'register.html', res_data)
 ```
 
