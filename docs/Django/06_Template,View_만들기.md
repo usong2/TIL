@@ -299,3 +299,114 @@ def register(request):
         return render(request, 'register.html', res_data)
 ```
 
+<br>
+
+### 이메일 필드 추가
+
++ community/user/models.py 수정
+
+```python
+from django.db import models
+  
+  # Create your models here.
+  
+  class User(models.Model):
+      username = models.CharField(max_length=32, verbose_name='사용자명')
+      useremail = models.EmailField(max_length=128, verbose_name='사용자이메일')
+      password = models.CharField(max_length=64, verbose_name='비밀번호')
+      registered_dttm = models.DateTimeField(auto_now_add=True, verbose_name='등록시간')
+      
+      def __str__(self):
+            return self.username
+        
+      class Meta:
+          db_table = 'usong_user'
+          verbose_name = '유송커뮤니티 사용자'
+          verbose_name_plural = '유송커뮤니티 사용자'
+```
+
+```bash
+$ python manage.py makemigrations
+  1) Provide a one-off default now
+  >>> 'test@gmail.com'
+$ python manage.py migrate
+```
+
++ community/user/templates/register.html 수정
+
+```html
+...
+        <div class="container">
+            <div class="row mt-5">
+                <div class="col-12 text-center">
+                    <h1>회원가입</h1>
+                </div>
+            </div>
+            <div class="row mt-5"> <!-- error 메세지 추가 -->
+                <div class="col-12 text-center">
+                    {{ error }}
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="col-12">
+                    <form method="POST" action=".">
+                      {% csrf_token %}
+                      <div class="form-group">
+                        <label for="username">사용자 이름</label>
+                        <input type="text" class="form-control" id="username" placeholder="사용자 이름" name="username">
+                      </div>
+                        <div class="form-group">
+                        <label for="useremail">사용자 이메일</label>
+                        <input type="email" class="form-control" id="useremail" placeholder="사용자 이름" name="useremail">
+                      </div>
+                      <div class="form-group">
+                        <label for="password">비밀번호</label>
+                        <input type="password" class="form-control" id="password" placeholder="비밀번호" name="password">
+                      </div>
+                        <div class="form-group">
+                        <label for="re-password">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="re-password" placeholder="비밀번호 확인" name="re-password">
+                      </div>
+                      <button type="submit" class="btn btn-primary">등록</button>
+                    </form>
+                </div>
+            </div>
+```
+
++ community/user/views.py 수정
+
+```python
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.contrib.auth.hashers import make_password
+from .models import User
+
+# Create your views here.
+
+def register(request):
+    if request.method == 'GET':
+    	return render(request, 'register.html')
+    elif request.method == 'POST':
+        username = request.POST.get('username', None)
+        useremail = request.POST.get('useremail', None)
+        password = request.POST.get('password', None)
+        re_password = request.POST.get('re-password', None)
+        
+        res_data = {}
+        
+        if not (username and useremail and password and re_password):
+            res_data['error'] = '모든 값을 입력해야합니다.'
+        elif password != re_password:
+            res_data['error'] = '비밀번호가 다릅니다!'
+        else:
+            user = User(
+                username=username,
+                useremail=useremail,
+                password=make_password(password)
+            )
+
+            user.save()
+        
+        return render(request, 'register.html', res_data)
+```
+
