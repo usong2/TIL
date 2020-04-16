@@ -125,8 +125,7 @@ return <div>안녕하세요</div>;
   ```
 
   ```jsx
-  
-  ./src/App.js
+  // ./src/App.js
   
   import React from "react";
   import Hello from "./Hello";
