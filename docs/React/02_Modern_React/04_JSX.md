@@ -125,7 +125,8 @@ return <div>안녕하세요</div>;
   ```
 
   ```jsx
-  // ./src/App.js
+  
+  ./src/App.js
   
   import React from "react";
   import Hello from "./Hello";
@@ -183,6 +184,59 @@ return <div>안녕하세요</div>;
         <div className="gray-box"></div>
       </>
     );
+  }
+  
+  export default App;
+  ```
+
+#### if문 대신 조건부 연산자
+
++ JSX 내부의 자바스크립트 표현식에서 if문을 사용할 수 없음
+
++ 조건에 따라 다른 내용을 렌더링해야 할 때는 JSX 밖에서 if문을 사용하여 사전에 값을 설정하거나, { } 안에 조건부 연산자(삼항 연산자)를 사용
+
+  ```jsx
+  import React from 'react';
+  
+  function App() {
+    const name = '리액트';
+    return(
+      <div>
+        {name === '리액트' ? (
+            <h1>리액트입니다.</h1>
+        ) : (
+            <h2>리액트가 아닙니다.</h2>    
+        )}
+      </div>
+    )
+  }
+  ```
+
+#### AND 연산자(&&)를 사용한 조건부 렌더링
+
++ 특정 조건을 만족할 때 내용을 보여주고, 만족하지 않을 때 아예 아무것도 렌더링하지 않아야 하는 상황이 오면 조건부 연산자를 통해 구현 가능
+
+  ```jsx
+  import React from 'react';
+  
+  function App() {
+    const name = '뤼액트';
+    return <div>{name === '리액트' ? <h1>리액트입니다.</h1> : null}</div>;
+  }
+  
+  export default App;
+  ```
+
++ 위 코드와 같이 null을 렌더링하면 아무것도 보여주지 않음
+
++ 하지만 이것보다 더 짧은 코드로 똑같은 작업 가능
+
+  ```jsx
+  import React from 'react';
+  
+  function App() {
+    const name = '뤼액트';
+    return <div>{name === '리액트' && <h1>리액트입니다.</h1>}</div>;
   }
   
   export default App;
