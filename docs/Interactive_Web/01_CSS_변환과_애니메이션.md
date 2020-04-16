@@ -127,5 +127,121 @@
 </html>
 ```
 
+<br>
 
+## Animation
+
++ animation-name: 애니메이션 이름 지정
+
++ animation-duration: 지속 시간
+
++ animation-timing-function: 속도 곡선
+
+  + ```css
+    linear | cubic-bezier(0, 0, 0.07, 1.57)
+    ```
+
++ animation-delay: 애니메이션 시작 전 대기 시간
+
++ animation-interaction-count: 반복 횟수
+
+  + ```css
+    infinite | 3 
+    ```
+
++ animation-direction: 애니메이션의 방향
+
+  + ```css
+    normal | reverse | alternate | alternate-reverse
+    ```
+
++ animation-fill-mode: 애니메이션 종료 후 위치
+
+  + ```css
+    none | forwards | backwords | both
+    ```
+
++ animation-play-state: 일시정지 OR 재생 여부
+
+  + ```css
+    running | paused
+    ```
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie-edge">
+    <title>Interactive Web</title>
+    <style>
+      @keyframes sample-ani {
+        0% {
+          transform: translate(0, 0);
+        }
+        50% {
+          transform: translate(300px, 0);
+          background: red;
+        }
+        100% {
+          transform: translate(400px, 500px);
+        }
+      }
+      .box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100px;
+        height: 100px;
+        border: 2px solid #000;
+        background: #fff000;
+        animation: sample-ani 3s linear forwards;
+      }
+      .box:hover {
+        animation-play-state: paused;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Animation</h1>
+    <div class="box">BOX</div>
+  </body>
+</html>
+```
+
+<br>
+
+## frame by frame
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie-edge">
+    <title>Interactive Web</title>
+    <style>
+      body{background: #000;}
+      @keyframes runner-ani {
+        /* to = 100% */
+        to {
+          background-position: -768px 0;
+          transform: translate(500px, 0);
+        }
+      }
+      .runner {
+        width: 128px;
+        height: 128px;
+        background: url('./runner.png') no-repeat 0 0 / auto 128px;
+        animation: runner-ani 1s infinite alternate steps(6);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="runner"></div>
+  </body>
+</html>
+```
 
