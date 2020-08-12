@@ -594,4 +594,317 @@ react-redux라는 라이브러리를 사용하면서 유용한 함수와 Hooks�
 
 ### 한 파일에 몰아서 작성하기 => Ducks 패턴
 
-+ Ducks 패턴: [https://github.com/erikras/ducks-modular-redux](https://github.com/erikras/ducks-modular-redux)
+Ducks 패턴: [https://github.com/erikras/ducks-modular-redux](https://github.com/erikras/ducks-modular-redux)
+
++ ./src/modules 폴더 생성
+
++ ./src/modules/counter.js 생성
+
+  ```jsx
+  // ./src/modules/counter.js
+  
+  // 액션 타입 선언
+  const SET_DIFF = "counter/SET_DIFF";
+  const INCREASE = "counter/INCREASE";
+  const DECREASE = "counter/DECREASE";
+  
+  // 액션 생성함수 선언
+  export const setDiff = (diff) => ({ type: SET_DIFF, diff });
+  export const increase = () => ({ type: INCREASE });
+  export const decrase = () => ({ type: DECREASE });
+  
+  // 초기 상태 선언
+  const initialState = {
+    number: 0,
+    diff: 1,
+  };
+  
+  // 리듀서 생성
+  export default function counter(state = initialState, action) {
+    switch (action.type) {
+      case SET_DIFF:
+        return {
+          ...state,
+          diff: action.diff,
+        };
+      case INCREASE:
+        return {
+          ...state,
+          number: state.number + state.diff,
+        };
+      case DECREASE:
+        return {
+          ...state,
+          number: state.number - state.diff,
+        };
+      default:
+        return state;
+    }
+  }
+  ```
+
++ ./src/modules/todos.js 생성
+
+  ```jsx
+  // ./src/modules/todos.js
+  
+  const ADD_TODO = "todos/ADD_TODO";
+  const TOGGLE_TODO = "todos/TOGGLE_TODO";
+  
+  let nextId = 1;
+  
+  export const addTodo = (text) => ({
+    type: ADD_TODO,
+    todo: {
+      id: nextId++,
+      text,
+    },
+  });
+  
+  export const toggleTodo = (id) => ({
+    type: TOGGLE_TODO,
+    id,
+  });
+  
+  const initialState = [
+    /* 
+      {
+          id: 1,
+          text: '예시',
+          done: false
+      }
+      */
+  ];
+  
+  export default function todos(state = initialState, action) {
+    switch (action.type) {
+      case ADD_TODO:
+        return state.concat(action.todo);
+      case TOGGLE_TODO:
+        // todo의 id가 일치하면 done 값을 바꿔주고 그렇지 않으면 유지
+        return state.map((todo) =>
+          todo.id === action.id ? { ...todo, done: !todo.done } : todo
+        );
+      default:
+        return state;
+    }
+  }
+  ```
+
++ ./modules/index.js
+
+  ```js
+  // ./src/modules/index.js
+  
+  import { combineReducers } from "redux";
+  import counter from "./counter";
+  import todos from "./todos";
+  
+  const rootReducer = combineReducers({
+    counter,
+    todos,
+  });
+  
+  export default rootReducer;
+  ```
+
+#### 리덕스 적용
+
++ 리덕스 설치
+
+  ```bash
+  $ yarn add react-redux
+  ```
+
++ 상태 확인
+  ./src/index.js 수정
+
+  ```jsx
+  // ./src/index.js
+  
+  import React from "react";
+  import ReactDOM from "react-dom";
+  import "./index.css";
+  import App from "./App";
+  import * as serviceWorker from "./serviceWorker";
+  import { Provider } from "react-redux";
+  import { createStore } from "redux";
+  import rootReducer from "./modules";
+  
+  const store = createStore(rootReducer);
+  console.log(store.getState());
+  
+  ReactDOM.render(<App />, document.getElementById("root"));
+  
+  // If you want your app to work offline and load faster, you can change
+  // unregister() to register() below. Note this comes with some pitfalls.
+  // Learn more about service workers: https://bit.ly/CRA-PWA
+  serviceWorker.unregister();
+  ```
+
++ 리덕스 적용
+  ./src/index.js 수정
+
+  ```jsx
+  // ./src/index.js
+  
+  import React from "react";
+  import ReactDOM from "react-dom";
+  import "./index.css";
+  import App from "./App";
+  import * as serviceWorker from "./serviceWorker";
+  import { Provider } from "react-redux";
+  import { createStore } from "redux";
+  import rootReducer from "./modules";
+  
+  const store = createStore(rootReducer);
+  
+  ReactDOM.render(
+    <Provider store={store}>
+      <App />
+    </Provider>,
+    document.getElementById("root")
+  );
+  
+  // If you want your app to work offline and load faster, you can change
+  // unregister() to register() below. Note this comes with some pitfalls.
+  // Learn more about service workers: https://bit.ly/CRA-PWA
+  serviceWorker.unregister();
+  ```
+
+<br>
+
+## 카운터 구현하기
+
++ ./src/components 폴더 생성
+
++ ./src/components/Counter.js 생성
+
+  ```jsx
+  // ./src/components/Counter.js
+  
+  import React from "react";
+  
+  function Counter({ number, diff, onIncrease, onDecrease, onSetDiff }) {
+    const onChange = (e) => {
+      onSetDiff(parseInt(e.target.value, 10));
+    };
+    return (
+      <div>
+        <h1>{number}</h1>
+        <div>
+          <input type="number" value={diff} onChange={onChange} />
+          <button onClick={onIncrease}>+</button>
+          <button onClick={onDecrease}>-</button>
+        </div>
+      </div>
+    );
+  }
+  
+  export default Counter;
+  ```
+
++ ./src/containers 폴더 생성
+
++ ./src/containers/CounterContainer.js 수정
+
+  ```jsx
+  // ./src/containers/CounterContainer.js
+  
+  import React from "react";
+  import Counter from "../components/Counter";
+  import { useSelector, useDispatch } from "react-redux";
+  import { increase, decrase, setDiff } from "../modules/counter";
+  
+  function CounterContainer() {
+    const { number, diff } = useSelector((state) => ({
+      number: state.counter.number,
+      diff: state.counter.diff,
+    }));
+    const dispatch = useDispatch();
+  
+    const onIncrease = () => dispatch(increase());
+    const onDecrease = () => dispatch(decrase());
+    const onSetDiff = (diff) => dispatch(setDiff(diff));
+  
+    return (
+      <Counter
+        number={number}
+        diff={diff}
+        onIncrease={onIncrease}
+        onDecrease={onDecrease}
+        onSetDiff={onSetDiff}
+      />
+    );
+  }
+  
+  export default CounterContainer;
+  ```
+
++ ./src/App.js 수정
+
+  ```jsx
+  // ./src/App.js
+  
+  import React from "react";
+  import CounterContainer from "./containers/CounterContainer";
+  
+  function App() {
+    return <CounterContainer />;
+  }
+  
+  export default App;
+  ```
+
+프리젠테이셔널 컴포넌트(Counter.js)에서는 단순한 UI 선언에 집중하고 상태 관리는 컨테이너 컴포넌트(CounterContainer.js)에서 하도록 하여 컨테이너 컴포넌트에서 리덕스 스토어 상태를 불러오고 어떤 함수가 호출되면 액션 디스패치 작업을 컨테이너 컴포넌트에서 하며 프리젠테이셔널 컴포넌트에서는 클릭 시 받아온 props를 호출하고 받아온 값을 특정 부분에서 보여주는 형태 구현
+
+<br>
+
+## 리덕스 개발자 도구 적용하기
+
+리덕스 개발자 도구를 사용하면 현재 스토어의 상태를 개발자 도구에서 조회할 수 있으며 지금까지 어떤 액션들이 디스패치되었는지 그리고 액션에 따라 상태가 어떻게 변화해왔는지 확인 가능, 액션의 상태를 뒤로 되돌리기도 가능하며 액션의 상태를 개발자 도구에서 바로 디스패치도 가능
+
++ Google에 'Redux Devtools' 검색 
+
++ Chrome 웹 스토어 열기 및 설치 버튼 클릭
+
++ 프로젝트에서의 설치 명령어
+
+  ```bash
+  $ yarn add redux-devtools-extension
+  ```
+
++ ./src/index.js 수정
+
+  ```jsx
+  // ./src/index.js
+  
+  import React from "react";
+  import ReactDOM from "react-dom";
+  import "./index.css";
+  import App from "./App";
+  import * as serviceWorker from "./serviceWorker";
+  import { Provider } from "react-redux";
+  import { createStore } from "redux";
+  import rootReducer from "./modules";
+  import { composeWithDevTools } from "redux-devtools-extension";
+  
+  const store = createStore(rootReducer, composeWithDevTools());
+  
+  ReactDOM.render(
+    <Provider store={store}>
+      <App />
+    </Provider>,
+    document.getElementById("root")
+  );
+  
+  // If you want your app to work offline and load faster, you can change
+  // unregister() to register() below. Note this comes with some pitfalls.
+  // Learn more about service workers: https://bit.ly/CRA-PWA
+  serviceWorker.unregister();
+  ```
+
++ 개발자 도구 -> Redux에서 상태 관리 확인 가능
+
+
+
