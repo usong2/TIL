@@ -61,3 +61,25 @@ index.html에서 참조하는 파일은 public 폴더 밑에 있어야 한다. p
 
 serviceWorker.js 파일에는 PWA(progressive web app)와 관련된 코드가 들어 있다. PWA는 오프라인에서도 잘 동작하는 웹 애플리케이션을 만들기 위한 기술이다. create-react-app으로 프로젝트를 생성하면 PWA 기능은 기본적으로 꺼져 있는 상태이다. PWA 기능을 원한다면 index.js 파일에 serviceWorker.register(); 코드를 넣으면 된다. 
 
+### 주요 명령어 알아보기
+
+package.json 파일을 열어보면 네 가지 npm 스크립트 명령어를 확인할 수 있다. 
+
+1. 개발 모드로 실행하기
+
+   ```bash
+   $ npm start
+   ```
+
+   npm start는 개발 모드로 프로그램을 실행하는 명령어이다. 개발 모드로 실행하면 HMR이 동작하기 때문에 코드를 수정하면 화면에 즉시 반영된다. HMR이 없다면 코드를 수정하고 브라우저에서 수동으로 새로고침을 해야 하므로 번거롭다. 개발 모드에서 코드에 에러가 있을 때는 브라우저에 에러 메시지가 출력된다. 
+
+   에러 메시지가 출력된 영역을 클릭하면 에러가 발생한 파일이 에디터에서 열린다. 이는 create-react-app의 섬세함을 느낄 수 있는 기능이다. 
+
+   때에 따라 API 호출을 위해서 https로 실행해야 할 수도 있다. https 환경을 직접 구축하기란 여간 귀찮은 일이 아닌데, 고맙게도 create-react-app에서는 https로 실행하는 옵션을 제공한다. 
+
+   + 맥: HTTPS=true npm start
+   + 윈도우: set HTTPS=true && npm start
+
+   이 명령어를 입력하면 실행 자체 서명된 인증서(self-signed certificate)와 함께 https 사이트로 접속한다. 자체 서명된 인증서이기 때문에 안전하지 않다는 경고 문구가 뜨지만 무시하고 진행하면 된다. 
+
+   
