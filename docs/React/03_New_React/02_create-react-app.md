@@ -123,4 +123,58 @@ package.json 파일을 열어보면 네 가지 npm 스크립트 명령어를 확
 
    지금까지 작업한 내용을 빌드해 보면 media 폴더에는 big.{해시값}.jpeg 파일이 생성된다. 그러나 small.{해시값}.jpeg 파일은 생성되지 않는다. small.jpeg 파일의 내용은 어디에 있을까? main.{해시값}.js 파일에서 data:image를 키워드로 검색해 보면 이미지 파일이 문자열 형태로 자바스크립트 파일에 포함되어 있다는 사실을 확인할 수 있다. 
 
+3. 테스트 코드 실행하기
+
+   ```bash
+   $ npm test
+   ```
+
+   npm test를 입력하면 테스트 코드가 실행된다. create-react-app에는 제스트(jest)라는 테스트 프레임워크를 기반으로 테스트 시스템 구축되어 있다. create-react-app으로 프로젝트를 생성하면 App.test.js 파일이 생성된다. create-react-app에서는 자바스크립트 파일이 다음 조건을 만족하면 테스트 파일로 인식한다. 
+
+   + `__test__` 폴더 밑에 있는 모든 자바스크립트 파일
+   + 파일 이름이 .test.js로 끝나는 파일
+   + 파일 이름이 .spec.js로 끝나는 파일
+
+   util.js 파일을 생성해서 간단한 함수를 작성해 보자. 
+
+   ```jsx
+   // util.js
+   
+   export function addNumber(a, b) {
+       return a;
+   }
+   ```
+
+   코드에 버그가 있기 때문에 테스트 코드를 작성하면 실패할 것이다.
+   이번에는 util.test.js 파일을 생성해서 addNumber 함수를 테스트하는 코드를 작성해 보자. 
+
+   ```jsx
+   // util.test.js
+   
+   import { addNumber } from './util';
+   
+   if('add two numbers', () => {
+       const result = addNumber(1, 2);
+       expect(result).toBe(3);
+   });
+   ```
+
+   it, expect는 제스트에서 테스트 코드를 작성할 때 사용되는 함수이다. 
+   제스트를 실행해서 테스트 결과를 확인해 보자. 
+
+   ```bash
+   $ npm test
+   ```
+
+   App.test.js 파일은 성공하고 util.test.js 파일은 실패한다. util.js 파일의 버그를 수정해서 저장해 보자. 테스트 프로그램이 watch 모드로 동작하고 있기 때문에 util.test.js 테스트가 성공하는 것을 바로 확인할 수 있다. 
+
+   CI(continuous integration)와 같이 watch 모드가 필요 없는 환경에서는 다음 명령어로 테스트 코드를 실행한다. 
+
+   + 맥: CI=true npm test
+   + 윈도우: set "CI=true" && npm test
+
+   
+
+   
+
    
