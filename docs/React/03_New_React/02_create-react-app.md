@@ -170,11 +170,19 @@ package.json 파일을 열어보면 네 가지 npm 스크립트 명령어를 확
 
    CI(continuous integration)와 같이 watch 모드가 필요 없는 환경에서는 다음 명령어로 테스트 코드를 실행한다. 
 
-   + 맥: CI=true npm test
-   + 윈도우: set "CI=true" && npm test
-
+   + 맥: CI=true npm testtj윈도우: set "CI=true" && npm test
    
+4. 설정 파일 추출하기
 
-   
+   ```bash
+   $ npm run eject
+   ```
+
+   npm run eject를 실행하면 숨겨져 있던 create-react-app의 내부 설정 파일이 밖으로 노출된다. 이 기능을 사용하면 바벨이나 웹팩의 설정을 변경할 수 있다. 이 기능의 단점은 create-react-app에서 개선하거나 추가된 기능이 단순히 패키지 버전을 올리는 식으로 적용되지 않는다는 점이다. 이 기능은 리액트 툴체인에 익숙한 사람이 아니라면 추천하지 않는다. npm run eject 외에도 create-react-app의 설정을 변경할 방법이 있다. 
+
+   > 1. react.scripts 프로젝트를 포크(fork)해서 나만의 스크립트를 만든다. 
+   > 2. react-app-rewired 패키지를 사용한다. 
+
+   첫 번째 방법은 자유도가 높기 때문에 원하는 부분을 얼마든지 수정할 수 있다. 이렇게 수정된 내용을 여러 프로젝트에서 공통으로 사용할 수 있다는 장점도 있다. 두 번째 방법은 자유도는 낮지만 비교적 쉽게 설정을 변경할 수 있다는 장점이 있다. 하지만 두 가지 방법 모두 create-react-app의 이후 버전에 변경된 내용을 쉽게 적용할 수 없다는 단점이 있다. 
 
    
