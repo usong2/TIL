@@ -131,3 +131,96 @@ npm start를 이용해서 실행하면 화면에 버튼 두 개와 박스 두 �
 ```
 
 CSS 클래스 명이 서로 같기 때문에 위의 .big, .small는 아래의 .big, .small로 대체된다. 이처럼 일반적인 CSS 파일에서는 클래스명이 충돌할 수 있다. 
+
+### css-module로 작성하기
+
+css-module을 사용하면 일반적인 CSS 파일에서 클래스명이 충돌할 수 있는 단점을 극복할 수 있다. css- module은 간결한 클래스명을 이용해서 컴포넌트 단위로 스타일을 적용할 때 좋다. create-react-app에서는 CSS 파일 이름을 다음과 같이 작성하면 css-module이 된다. 
+
+```bash
+{이름}.module.css
+```
+
+css-module을 이용해서 이전에 작성했던 Button 컴포넌트를 다시 작성해 보자. Button1.css 파일을 복사해서 Button2.module.css 파일을 만들자. Button2.js 파일을 만들고 다음 코드를 입력한다. 
+
+```jsx
+import React from 'react';
+import style from './Button2.module.css';
+
+function Button({ size }) {
+    if (size === 'big') {
+        return <button className={`${style.button} ${style.big}`}>큰 버튼</button>;
+    } else {
+        return (
+        	<button className={`${style.button} ${style.small}`}>작은 버튼</button>;
+        );
+    }
+}
+
+export default Button;
+console.log(style);
+```
+
+css-module로 작성된 CSS 파일을 가져온 결과는 다음과 같다.
+
+```css
+{
+    big: 'Button2_big__1AXxH',
+    small: 'Button2_small_1G4lx',
+    button: 'Button2_box-_D8Lg-',
+}
+```
+
+각 클래스명에 고유한 해시값이 들어 있다. 사용자에게 전달된 HTML 파일을 열어 보면 해시값이 어떻게 사용되는지 알 수 있다. 
+
+```html
+<style type="text/css">
+    .Button2_big__1deZX {
+        width: 100px;
+    }
+    .Button2_small__1G4lx {
+        width: 50px;
+    }
+    .Button2_button__D8Lg- {
+        height: 30px;
+        background-color: #aaa;
+    }
+</style>
+```
+
+Button2.module.css 파일에서 입력한 내용이 클래스명만 변경된 채로 들어 있다. 클래스명에 해시값이 포함되어 있기 때문에 다른 CSS 파일에서 같은 이름의 클래스명을 사용하더라도 이름 충돌은 발생하지 않는다. 
+
+Button2.js 파일에서는 className에 속성값을 입력하는 코드가 번거롭기도 하고 가독성도 좋지 않다. 이때 classnames 패키지를 이용하면 코드를 개선할 수 있다. 다음과 같이 classnames 패키지를 설치한다. 
+
+```bash
+$ npm install classnames
+```
+
+이제 Buttons2.js 코드를 리팩토링 해보자.
+
+```jsx
+// ...
+import cn from 'classnames';
+// ....
+<button className={cn(style.button, style.big)}>큰 버튼</button>
+<button className={cn(style.button, style.small)}>작은 버튼</button>
+```
+
+박스 컴포넌트도 css-module 방식으로 작성해 보자. Box1.css 파일을 복사해서 Box2.module.css 파일을 만든다. Box2.js 파일을 만든 다음, 다음 코드를 입력해 보자. 
+
+```jsx
+import React from 'react';
+import style from './Box2.module.css';
+import cn from 'classnames';
+
+function Box({ size }) {
+    const isBig = size === 'big';
+    const label = isBig ? '큰 박스' : '작은 박스';
+    return(
+    	<div className={cn(style.box, { [style.big]: isBig, [style.small]: !isBig })}>{label}</div>
+    );
+}
+
+export default Box;
+```
+
+cn 함수의 인수로 객체를 사용하면 조건부로 클래스명을 입력할 수 있다.
