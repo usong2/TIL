@@ -224,3 +224,60 @@ export default Box;
 ```
 
 cn 함수의 인수로 객체를 사용하면 조건부로 클래스명을 입력할 수 있다.
+
+### Sass로 작성하기
+
+Sass는 CSS와 비슷하지만 별도의 문법을 이용해서 생산성이 높은 스타일 코드를 작성할 수 있게 도와준다. Sass 문법에 있는 변수, 믹스인(mixin) 등의 개념을 이용하면 스타일 코드를 재사용할 수 있다. 다음은 Sass 문법으로 작성된 간단한 코드다. 
+
+```scss
+$sizeNormal: 100px;
+
+.box { 
+	width: $sizeNormal;
+    height: 80px;
+}
+
+.button {
+    width: $sizeNormal;
+    height: 50px;
+}
+```
+
+일반적인 프로그래밍 언어처럼 변수를 정의할 수 있고 변수를 사용하면 코드 중복을 없앨 수 있다. 
+Sass 문법으로 작성한 파일은 별도의 빌드 단계를 거쳐서 CSS 파일로 변환된다. create-react-app에서 Sass를 사용하고 싶다면 다음 패키지를 설치하자.
+
+```bash
+$ npm install node-sass
+```
+
+node-sass 패키지는 Sass를 CSS로 빌드할 때 사용된다. create-react-app에는 Sass를 위한 빌드 시스템이 구축되어 있다. 자바스크립트에서 scss 확장자를 가지는 파일을 불러오면 자동으로 Sass 파일이 CSS 파일로 컴파일된다. 
+
+먼저 공통으로 사용되는 코드를 관리할 shared.scss 파일을 만든 다음 다음 내용을 입력하자. 
+
+```scss
+$infoColor: #aaa;
+```
+
+Sass를 이용해서 이전에 작성한 버튼 컴포넌트에 스타일을 적용해 보자. Button2.moudle.css, Button2.js 파일을 복사해서 Button3.js 파일에서는 Button2.module.css 파일을 가져오는 부분을 Button3.module.scss 파일로 변경한다. Button3.module.scss 파일은 다음과 같이 수정한다. 
+
+```css
+@import './shared.scss';
+
+.big {
+    width: 200px;
+}
+.small {
+    with: 100px;
+}
+.box {
+    height: 50px;
+    background-color: $infoColor;
+} 
+```
+
+Sass 모듈의 시스템 덕분에 스타일 코드를 재사용할 수 있다. 
+
+App.js 파일에서 Button3.js, Box3.js 파일을 가져오도록 수정하고 npm start를 실행하면 의도한 대로 스타일이 적용된 것을 확인할 수 있다. shared.scss에서 색상 정보를 변경해 보자. HMR이 작동하면서 변경된 내용이 자동으로 브라우저 화면에 반영된다. 
+
+npm run build를 실행 후 생성된 CSS 파일을 열어 보자. shared.scss 파일의 변수가 .box, .button 스타일에 적용된 것을 확인할 수 있다.
+
