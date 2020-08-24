@@ -281,3 +281,70 @@ App.js 파일에서 Button3.js, Box3.js 파일을 가져오도록 수정하고 n
 
 npm run build를 실행 후 생성된 CSS 파일을 열어 보자. shared.scss 파일의 변수가 .box, .button 스타일에 적용된 것을 확인할 수 있다.
 
+### css-in-js로 작성하기
+
+css-in-js는 리액트의 인기에 힘입어 비교적 최근에 떠오르고 있느 방법이다. 이름에서 알 수 있듯이 CSS 코드를 자바스크립트 파일 안에서 작성한다. CSS 코드가 자바스크립트 안에서 관리되기 때문에 공통되는 CSS 코드를 변수로 관리할 수 있다. 또한 동적으로 CSS 코드를 작성하기도 쉽다. 
+
+css-in-js를 지원하는 패키지가 많이 나왔고, 문법도 다양하다. 개발자 개개인이 자바스크립트와 CSS 모두를 작성할 줄 안다면 css-in-js는 좋은 선택이 될 수 있다. 그러나 CSS만 담당하는 마크업 개발팀 별도로 있는 회사라면 css-in-js를 도입하기가 힘들 수 있다. 
+
+css-in-js를 지원하는 패키지 중에서 가장 유명한 styled-components를 사용해서 간단한 코드를 작성해 보자.
+
+```bash
+$ npm install styled-components
+```
+
+css-in-js 방식을 이용해서 박스 컴포넌트에 스타일을 적용해 보자. Box1.js 파일을 복사해서 Box1.js 파일을 만든 후 다음과 같이 수정한다. 
+
+```jsx
+import React from 'react';
+import styled from 'styled-components';
+
+const BoxCommon = styled.div`
+	height: 50px;
+	background-color: #aaa;
+`;
+const BoxBig = styled(BoxCommon)`
+	width: 200px;
+`;
+const BoxSmall = styled(BoxCommon)`
+	width: 100px;
+`;
+
+function Box({ size }) {
+    if (size === 'big') {
+        return <BoxBig>큰 박스</BoxBig>;
+    } else {
+        return <BoxSmall>작은 박스</BoxSmall>;
+    }
+}
+
+export default Box;
+```
+
+공통 CSS 코드를 담고 있는 styled-components 컴포넌트를 만들었다. 마치 클래스 상속처럼 이전에 만든 BoxCommon 컴포넌트를 확장해서 새로운 styled-components 컴포넌트를 만들 수 있다. styled-components 컴포넌트는 일반적인 리액트 컴포넌트처럼 사용될 수 있다. styled-components 컴포넌트를 만들 때 사용된 문법이 생소해 보일 수 있다. 이는 ES6에 추가된 태그된 템플릿 리터럴(tagged template literals) 문법이다.
+
+App.js 파일에서 Box4.js 파일을 가져오도록 수정하고 npm start를 실행하면 의도한 대로 동작하는 것을 확인할 수 있다. CSS 파일 없이 자바스크립트 파일만으로 스타일을 작성하는 데 성공한 것이다. 
+
+css-in-js의 장점인 동적 스타일을 적용해 보자. Box4.js 파일의 내용을 다음과 같이 변경한다. 
+
+```jsx
+import React from 'react';
+import styled from 'styled-components';
+
+const BoxCommon = styled.div`
+	width: ${props => (props.isBig ? 200 : 100)}px;
+	height: 50px;
+	background-color: #aaa;
+`;
+
+function Box({ size }) {
+    const isBig = size === 'big';
+    const label = isBig ? '큰 박스' : '작은 박스';
+    return <BoxCommon isBig={isBig}>{label}</BoxCommon>;
+}
+
+export default Box;
+```
+
+템플릿 리터럴에서 표현식(expression)을 사용하면 컴포넌트의 속성값을 매개변수로 갖는 함수를 작성할 수 있다. 동적으로 스타일을 변경하기 때문에 styled-components 컴포넌트는 하나로 충분하다. isBig 속성값은 styled-components 컴포넌트의 표현식에서 사용된다. 
+
