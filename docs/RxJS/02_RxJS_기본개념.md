@@ -119,3 +119,140 @@ RxJS 공식 문서에서는 옵저버블의 라이프사이클을 다음과 같�
 
 시작은 옵저버블의 생성이다. 보통 require('rxjs')에서 불러온 Observable 클래스의 정적 함수 Observable.create로 직접 옵저버블을 생성한다. 그런데 Observable 클래스의 정적 함수가 아닌 require('rxjs')에서 불러올 수 있는 함수 중 range나 of로도 필요한 옵저버블을 쉽게 생성할 수 있다. 이 방식은 추상화된 형태로 옵저버블을 사용한다는 장점이 있다. 또한 이렇게 생성된 옵저버블 인스턴스에 Observable.prototype으로 연결된 pipe 함수에 다양한 연산자를 인자로 사용해서 새로운 옵저버블 인스턴스를 생성할 수 있다.
 
+구독과 실행은 데이터를 전달할 콜백을 제공해 함수를 호출(구독)한 후 옵저버블에서 발행하는 값을 사용하는 것으로 설명할 수 있다. subscribe 함수를 이용한다. 함수를 여러 번 호출해도 해당 함수가 각각 독립적으로 동작한다는 특징이 있다. 예를 들어, addEventListner 메서드를 호출해서 함수가 등록된 이후로 이벤트가 발생했을 때 등록된 함수로 멀티캐스팅한다. 즉, 옵저버가 구독하는 이벤트에 이벤트가 발생하면 모든 옵저버가 같은 결과를 전달받도록 여러 옵저버에서 멀티캐스팅했다는 뜻이다. 
+
+그러나 지금 소개하는 옵저버블은 subscribe라는 함수를 여러 번 호출해도 마치 함수 호출을 처음 하는 것처럼 새로 함수 실행이 시작되는 것을 확인할 수 있다. 
+
+```js
+const { Observable } = require('rxjs');
+
+const observableCreated$ = Observable.create(function(observer) {
+    for (let i = 1; i <= 10; i++) {
+        setTimeout(function() {
+            observer.next(i);
+            if (i === 10) {
+                observer.complete();
+            }
+        }, 300 * i);
+    }
+});
+
+observableCreated$.subscribe(
+	function next(item) {
+        console.log(`observerA: ${item}`);
+    },
+    function error(err) {
+        console.log(`observerA: ${err}`);
+    },
+    function complete() {
+        console.log(`observerA: complete`);
+    }
+);
+setTimeout(function() {
+    observableCreate$.subscribe(
+    	function next(item) {
+            console.log(`observerB: ${item}`);
+        },
+        function error(err) {
+            console.log(`observerB: ${err}`);
+        },
+        function complete() {
+            console.log(`observerB: complete`);
+        }
+    );
+}, 1350);
+```
+
+setTimeout 함수를 이용해 일정 간격으로 값을 발행하는 옵저버블이 있고 해당 옵저버블을 observerA란 이름으로 먼저 구독한 후, 1350ms 후에 observerB란 이름으로 같은 옵저버블을 구독한다. observerA와 observerB가 같은 값을 발행하지 않고 observerB를 구독한 시점부터는 1부터 새로운 값을 발행한다. 
+
+위의 코드는 같은 값을 발행할 수 있도록 멀티캐스팅하지 않는 상황이다. 즉, 뒤늦게 구독해도 클릭 이벤트가 발생하면 같은 내용을 전달받아야 하는데 그렇지 않다. RxJS의 옵저버블은 멀티캐스팅이 안 될 때와 될 때를 모두 지원한다. 
+
+구독 해제는 쉽게 말해 옵저버블의 구독을 해제하는 것이다. 예외 상황이 있긴 하지만 옵저버블에서 발행하는 값을 더 받지 않는다. unsubscribe 함수를 사용해 구독 해제를 알리거나 구독 해제 후 해야 할 처리를 정의한다.
+
+참고로 명령형 프로그래밍에 익숙하다면 RxJS를 사용할 때 주의할 점이 있다. 각 연산자에 넘겨준 함수에 return이나 break를 설정한다고 옵저버블의 동작이 중단되지 않는다는 것이다. RxJS에서 실행되는 함수에서 return이나 break를 사용하면 해당 함수 안에서만 실행을 중단한다. 해당 옵저버블 구독을 중단한다는 의미는 아니다. 따라서 구독 해제를 원한다면 앞으로 소개할 RxJS에서 제공하는 풍부한 연산자 중 적절한 연산자를 선택해 구독을 해제하거나 명시적으로 unsubscribe 함수를 호출해서 구독을 해제해야 한다. 
+
+### 2.2.2 옵저버블 생성하고 실행하기
+
+아래의 코드는 Observable.create라는 함수를 호출해 옵저버블을 생성하고, 옵저버블 인스턴스에 있는 subscribe 함수를 호출해 옵저버블을 구독하고 실행하는 예다.
+
+```js
+const { Onbservable } = require('rxjs');
+
+const observableCreated$ = Observable.create(function(observer) {
+    console.log(`BEGIN Observable`);
+    observer.next(1);
+    observer.next(2);
+    observer.complete();
+    console.log(`END Observable`);
+});
+
+observableCreated$.subscribe(
+	function next(item) { console.log(item); }
+    function error(e) { },
+    function complete() { console.log(`complete`); }
+);
+```
+
+실행 결과는 다음과 같다.
+
+```
+BEGIN Observable
+1
+2
+complete
+END Observable
+```
+
+subscribe 함수의 호출 부분을 주석 처리하면(호출하지 않으면) 아무 일도 하지 않는다. 즉, 생성한 옵저버블은 옵저버에게 값을 전달하는 함수가 있지만 subscribe 함수가 호출되어야 옵저저블과 옵저버를 연결해 실행한다. 옵저버의 구성 요소가 옵저버블과 옵저버의 관계를 표현하면 아래와 같다.
+
+> ① 함수 호출
+>
+> ↓
+>
+> 옵저버블 [ subscribe 함수 ]
+>
+> ② 옵저버와 연결
+>
+> ③ 동작 실행 
+>
+> ```
+> next(1)
+> next(2)
+> next(3)
+> complete()
+> ```
+>
+> ↓
+>
+> 옵저버 [ next함수, error 함수, complete 함수 ]
+
+즉, 옵저버블 객체 생성 자체는 아무 일도 하지 않고 어떤 일을 해야 할지에 관한 정보만 있고, subscribe 함수를 호출해야 옵저버블이 옵저버에 데이터를 전달하며 동작을 실행한다. 옵저버 객체는 next, error, complete라는 세 가지 함수로 구성되어 있고, subscribe 함수에는 next, error, complete 함수 순서로 옵저버의 구성 요소나 콜백 함수들을 객체로 감싼 옵저버 객체를 전달할 수 있다.
+
+아래의 코드는 next와 complete 함수의 역할을 설명한다.
+
+```js
+Observable.create(function(observer) {
+	console.log(`BEGIN Observable`);
+    observer.next(1);
+    observer.next(2);
+    observer.complete();
+    observer.next(3);
+}).subscribe(
+	function next(item) { console.log(item) },
+    function error(e) { },
+    function complete() { console.log(`complete`); }
+);
+```
+
+실행 결과는 다음과 같다.
+
+```bash
+BEGIN Observable
+1
+2
+complete
+END Observable
+```
+
+옵저버블 객체에서 subscribe 함수를 호출하면 옵저버블이 옵저버의 complete나 error 함수를 호출할 때까지 next 함수로 값을 발행한다. 위의 코드에서는 observer.next(3)까지 호출할 수 있지만 next(3)을 호출하기 전 옵저버의 complete 함수를 호출했으므로 subscribe 함수 안에 있는 next 함수에 값 3은 발행되지 않는다.
+
