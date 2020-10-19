@@ -115,7 +115,7 @@ RxJS 공식 문서에서는 옵저버블의 라이프사이클을 다음과 같�
 1. 옵저버블 생성(Create Observables)
 2. 옵저버블 구독(Subscribing to Observables)
 3. 옵저버블 실행(Executing the Observables)
-4. 옵저버블 구독 해제(Dosposing Observables)
+4. 옵저버블 구독 해제(Disposing Observables)
 
 시작은 옵저버블의 생성이다. 보통 require('rxjs')에서 불러온 Observable 클래스의 정적 함수 Observable.create로 직접 옵저버블을 생성한다. 그런데 Observable 클래스의 정적 함수가 아닌 require('rxjs')에서 불러올 수 있는 함수 중 range나 of로도 필요한 옵저버블을 쉽게 생성할 수 있다. 이 방식은 추상화된 형태로 옵저버블을 사용한다는 장점이 있다. 또한 이렇게 생성된 옵저버블 인스턴스에 Observable.prototype으로 연결된 pipe 함수에 다양한 연산자를 인자로 사용해서 새로운 옵저버블 인스턴스를 생성할 수 있다.
 
@@ -363,4 +363,44 @@ subject.next(3); // 값 발행 안 됨
 ```
 
 rxjs에 속한 Subject를 상속받는 것으로 BehaviorSubject, ReplaySubject, AsyncSubject가 있다.
+
+## 2.4 연산자
+
+RxJS의 연산자는 기본적으로 함수 형태다. 즉 map이나 filter와 같은 여러 값을 취급할 수 있는 연산자를 제공한다. 연산자의 일부는 개발자가 작성한 함수를 인자로 사용해 동작하는 것도 있다. 예를 들어 map 연산자는 값을 어떻게 변환할지 정하는 함수를 인자로 사용하고, filter 연산자는 조건을 확인해 true와 false를 리턴하는 함수를 인자로 사용한다.
+
+연산자를  사용하려면 옵저버블을 생성해야 한다. 따라서 옵저버블을 생성하는 함수나 이미 생성된 옵저버블 인스턴스에서 pipe 함수로 값을 다룰 연산자들이 필요하다. 예를 들어 Observable.create는 옵저버블을 생성하는 일반적인 생성 함수다. rxjs에서 불러온 생성 함수로는 1개의 값만 발행하는 옵저버블을 생성하는데, of 특정 범위의 값을 순서대로 발행하는 옵저버블을 생성하는 range 등이 있다.
+
+아래의 코드는 생성 함수인 interval과 파이퍼블 연산자인 filter를 각각 rxjs와 rxjs/operators에서 불러와서 pipe 함수 안에서 사용한다.
+
+```js
+const { interval } = require('rxjs');
+const { filter } = require('rxjs/operators');
+
+let divisor = 2;
+setInterval(function() {
+    divisor = (divisor + 1) $ 10;
+}, 500);
+
+interval(700).pipe(
+	filter(function(value) {
+        return value % divisor == 0;
+    })
+).subscribe((value) => console.log(value));
+```
+
+참고로 RxJS의 연산자는 앞서 소개한 순수 함수 형태다. 단, 인자로 사용하는 함수가 순수 함수가 아니라면 이 연산자의 동작은 순수 함수가 아니다. 
+
+예를 들어 위의 코드의 divisor는 var로 선언했으므로 이 변수가 선언된 함수 안까지 유효 범위다. 옵저버블이 divisor를 참조할 때는 유효 범위 안에서 옵저버블 이외의 다른 함수 등에서 수정할 수 있다. 위의 코드라면 유효 범위 안에 있는 setInterval 함수로도 수정할 수 있는 것이다. 여기에서 setInterval 함수로 0.5초마다 divisor 값이 바뀌도록 했다. 
+
+또한 해당 코드에는 0부터 1씩 증가하는 값을 인자로 사용해 주어진 간격마다 값을 출력하는 interval 함수가 있다. 이때 0.5초마다 divisor의 값을 바꾸는 것과 시차를 두려고 인자로 0.7초를 설정했다. 그런 다음 filter 연산자로 divisor로 나눠 0이 되는 값만 출력하도록 구현해보았다. 
+
+이때 filter 연산자에서 사용하는 함수는 부수 효과가 있는 함수다. filter 연산자에서 사용하는 function (value) { return value % divisor == 0; }의 결과는 다른 외부 요인 때문에 결과가 달라질 수 있다. filter 연산자에 있는 값이 true인 것만 선별할 때 divisor 값은 외부 참조할 수 있어 값이 바뀔 수 있기 때문이다. 따라서 불변 타입인 const 키워드로 선언해 값을 바꿀 수 없는 기본 타입을 참조하거나, 연산자에서 사용하는 함수 안이라는 유효 범위를 작는 변수를 사용해야 안전하다.
+
+### 2.4.1 RxJS 5와 6의 연산자 차이
+
+RxJS 5의 공식 문서에서는 옵저버블을 생성해서 출발점이 될 수 있는 정적 연산자와 생성된 옵저버블 인스턴스에서 호출할 수 있는 인스턴스 연산자를 나누었다. RxJS 6에서는 이런 개념이 사라졌다. 따라서 정적 연산자처럼 옵저버블을 생성하는 함수를 정의해야 한다. 
+
+ReactiveX 공식 문서에서는 이러한 함수를 연산자 카테고리 중 하나인 생성 연산자로 분류하지만 RxJS에서는 두 가지 이유 때문에 생성 함수라고 한다. 첫 번째는 옵저버블을 생성하는 함수가 패키지 상 rxjs/operator나 rxjs/operators에 있지 않기 때문이다.
+
+두 번째는 버전 6 마이그레이션 문서의 'Observable classes'에 근거를 둔다. 기존 버전 5에서 각 옵저버블의 클래스로 제공하던 것들을 버전 6에서 from, of와 같은 함수로 제공한다고 설명한다. 표를 살펴봐도 연산자를 'v6 creation function'라고 분류했다.
 
