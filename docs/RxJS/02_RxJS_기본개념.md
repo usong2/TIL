@@ -404,3 +404,72 @@ ReactiveX 공식 문서에서는 이러한 함수를 연산자 카테고리 중 
 
 두 번째는 버전 6 마이그레이션 문서의 'Observable classes'에 근거를 둔다. 기존 버전 5에서 각 옵저버블의 클래스로 제공하던 것들을 버전 6에서 from, of와 같은 함수로 제공한다고 설명한다. 표를 살펴봐도 연산자를 'v6 creation function'라고 분류했다.
 
+### 2.4.2 파이퍼블 연산자
+
+파이퍼블 연산자는 생성 함수로 만들어진 옵저버블 인스턴스를 pipe 함수 안에서 다룰 수 있는 연산자다. <옵저버블 인스턴스>.pipe(연산자1 (), 연산자2(), ...) 형태로 연산자를 연결해서 호출할 수 있다. 이렇게 연결한 파이퍼블 연산자는 각 연산자를 거치며 새로운 옵저버블 인스턴스를 리턴한다. pipe 함수 호출 후 리턴하는 결과도 각 연산자로 감싼 새로운 옵저버블 인스턴스다. 
+
+따라서 '<옵저버블 인스턴스>.(연산자1 (), 연산자2())'처럼 나열해서 사용할 수도 있지만, '<옵저버블 인스턴스>.pipe(연산자1 ()).pipe(연산자2 ())'처럼 pipe 함수 뒤에 다시 pipe 함수를 연결해서 사용해도 동일하게 동작한다. 왜냐하면 옵저버블 인스턴스는 pipe 함수를 호출할 수 있고, pipe 함수는 인자로 사용한 연산자를 적용한 결과의 옵저버블 인스턴스를 리턴하기 때문이다. 곧 설명할 lift 함수는 어떻게 이런 동작을 할 수 있는지 이해하는 데 도움이 될 것이다. 
+
+기본적으로 파이퍼블 연산자는 rxjs/operators(s가 뒤에 붙어 있으니 rxjs/operator와 혼동하지 않기 바란다) 아래에서 불러올 수 있다. 그리고 range 같은 생성 함수는 rxjs 아래 있다. 단, 예외가 있다. Observable.create는 rxjs에서 Observable 클래스를 불러온 후 정적 메서드 형탵로 호출하는 연산자다. 대표적인 연산자로는 map이나 filter가 있다. 
+
+아래의 코드는 위의 코드에 이어 생성 함수와 파이퍼블 연산자를 함께 사용하는 다른 예다.
+
+```js
+const { range } = require('rxjs');
+const { filter, map } = require('rxjs/operators');
+
+range(1, 10).pipe(
+	filter(function(value) {
+        return value % divisor == 0;
+    }),
+    map(function(value) {
+        return value + 1;
+    })
+);
+```
+
+먼저 range 함수가 옵저버블을 생성한다. 그리고 pipe 함수로 filter라는 연산자 뒤에 map이라는 연산자를 연결해서 리턴한다. filter 연산자가 새로운 옵저버블 인스턴스를 만든 후, map이라는 파이퍼블 연산자를 연결하여 호출할 수 있도록 하기 때문이다. 
+
+참고로 파이퍼블 연산자를 연결해 새로운 옵저버블 인스턴스를 생성할 수 있는 이유는 파이퍼블 연산자 각각의 구현을 보면 알 수 있다. 대표적으로 filter 연산자의 구현을 살펴보면 Observable.js에 있는 lift 함수를 사용한다. lift 함수 구현을 살펴보자. 
+
+```js
+lift(operator) {
+    const observable = new Observable();
+    observable.source = this;
+    observable.operator = operator;
+    return observable;
+}
+```
+
+lift 함수는 기존 옵저버블에 영향을 주지 않는다. 기존 옵저버블은 this로 새로운 옵저버블의 source로 설정한다. 그리고 source를 감싸는 연산자를 지정(observable.operator = operator)해 나중에 구독할 때 어떤 연산자를 실행할지 알 수 있도록 했다. 새로운 옵저버블은 연산자를 호출할 때마다 리턴(return observable)된다. 즉, 기존 옵저버블을 감싸서 새로운 옵저버블 한 단계 끌어 올려주는 역할을 한다.
+
+아래의 코드는 Observable.js에 있는 subscribe 함수의 구현 일부다. 연산자가 있는지를 판단한 후 연산자가 있으면 연산자에 해당하는 동작을 실행한다.
+
+```js
+const sink = toSubscriber(observerOrNext, error, complete);
+
+if (operator) {
+    operator.call(sink, this.source);
+}
+else {
+    sink.add(this.trySubscribe(sink));
+}
+```
+
+연산자가 없을 때는 _trySubscribe에서 subscribe 함수에 위치해있는 최종 옵저버(this._subscribe(sink))에 결과를 전달한다.
+
+```js
+_trySubscribe(sink) {
+    try {
+        return this._subscribe(sink);
+    }
+    catch(err) {
+        sink.syncErrorThrown = true;
+        sink.syncErrorValue = err;
+        sink.error(err);
+    }
+}
+```
+
+앞으로 연산자를 연결할 때 연산자를 호출하는 옵저버블은 소스 옵저버블이라고 할 것이다. 
+
