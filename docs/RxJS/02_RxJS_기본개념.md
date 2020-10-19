@@ -324,5 +324,43 @@ setTimeout(function() {
 
 위의 코드에서는 400ms, 300ms마다 값을 발행하는 2개 옵저버블의 subscribe 함수를 호출하여 구독한다. 처음 구독한 결과는 subscription 변수에 할당하고, 그 다음 구독하는 결과는 childSubscription 변수에 할당한다. subscription.add로 childSubscription 객체를 추가했고, unsubscribe 함수를 호출해서 모든 Subscription 인스턴스의 구독을 해제했다. add나 remove 함수를 사용할 때는 해당 Subscription 객체가 어떤 Subscription 객체까지 영향을 주는지 항상 주의해서 사용해야 한다.
 
+## 2.3 서브젝트
 
+서브젝트는 멀티캐스팅을 지원하는 객체다. 멀티캐스팅을 지원한다는 것은 여러 옵저버가 이벤트 변경이나 값 전달을 관찰하도록 옵저버블을 구독한 후, 실제 이벤트 변경이나 값 전달이 발생했을 때 이를 알린다는 뜻이다. 구독 중인 모든 옵저버가 호출되어 같은 값을 전달받는다는 뜻이다. 즉, subscribe 함수로 여러 옵저버를 등록한 후 next 함수로 발생하는 값을 여러 옵저버에 전달할 수 있다. 
+
+서브젝트는 옵저버블이면서 옵저버 역할도 한다. 즉, 옵저버블이므로 여러 옵저버가 옵저버블을 구독할 수 있고, 옵저버이기도 하므로 next, error, complete 함수를 호출해 같은 결과를 전달받을 수 있다. 
+
+아래의 코드는 RxJS 공식 문서 '서브젝트'에 있는 기본 동작을 살펴볼 수 있는 예다. 역시 버전 6 기준으로 변경했다. 
+
+```js
+const { Subject } = require('rxjs');
+
+const subject = new Subject();
+
+subject.subscribe({
+    next: function(v) {
+        console.log(`observerA: ` + v);
+    }
+});
+
+subject.subscribe({
+    next: function(V) {
+        console.log(`observerB: ` + v);
+    }
+});
+
+subject.next(1);
+subject.next(2);
+```
+
+서브젝트는 옵저버블의 속성이 있으므로 subscribe 함수를 두 번 호출했고, next 함수를 바로 호출할 때마다 해당 서브젝트를 구독하는 옵저버들은 같은 결과를 전달받을 수 있다. 즉, subject 변수는 값을 보내주고 알려주는 형태의 옵저버블이자 옵저버고, observerA와 B는 이를 구독하는 옵저버다. 이런 멀티캐스팅 방식은 EventEmitter와 비슷하다고도 볼 수 있다. 
+
+만약 위의 코드에서 subject.complete를 호출하고 다시 next함수를 호출하면 어떻게 될까? 구독을 완료한 옵저버가 되므로 서브젝트는 더 이상 값을 발행하지 않는다.
+
+```js
+subject.complete();
+subject.next(3); // 값 발행 안 됨
+```
+
+rxjs에 속한 Subject를 상속받는 것으로 BehaviorSubject, ReplaySubject, AsyncSubject가 있다.
 
