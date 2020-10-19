@@ -256,3 +256,73 @@ END Observable
 
 옵저버블 객체에서 subscribe 함수를 호출하면 옵저버블이 옵저버의 complete나 error 함수를 호출할 때까지 next 함수로 값을 발행한다. 위의 코드에서는 observer.next(3)까지 호출할 수 있지만 next(3)을 호출하기 전 옵저버의 complete 함수를 호출했으므로 subscribe 함수 안에 있는 next 함수에 값 3은 발행되지 않는다.
 
+### 2.2.3 구독 객체 관리하기
+
+옵저버는 앞에서 언급한 next, error, complete라는 세 가지 함수로 구성된 객체다. 옵저버블은 각 연산자를 거쳐 subscribe 함수 안 옵저버로 값을 전달한다. 즉, subscribe 안 함수가 각각을 사용해 옵저버 객체를 생성하고 이 옵저버 객체로 함수 각각을 호출해 값을 발행한다. 
+
+구독을 멈추게 하는 함수는 unsubscribe다. subscribe가 리턴하는 객체는 Subscription 클래스의 타입이다. Subscription 타입은 unsubscribe 함수를 호출해야 구독을 멈추게 할 수 있다. unsubscribe 함수를 호출하면 특정 시점에 호출해야 하는 옵저버블 내부의 함수를 호출하며, 해당 함수 안에서는 관련 자원을 구독 해제한다.
+
+RxJS 공식문서의 '옵저버블 실행 끝내기'의 예제를 버전 6에 맞게 수정한 코드다. setInterval 메서드로 1초마다 'hi'라는 문자열을 보내고 옵저버블을 구독을 해제하는 용도로 unsubscribe 함수를 리턴한다.
+
+```js
+const { Observable } = require('rxjs');
+
+const observableCreated$ = Observable.create(function subscribe(observer) {
+    // intervalID 자원 추적
+    const intervalID = setInterval(function() {
+        observer.next('hi');
+    }, 1000);
+    
+    // intervalID 자원을 해제하고 재배치하는 방법을 제공
+    return function unsubscribe() {
+        clearInterval(intervalID);
+    };
+});
+```
+
+옵저버블을 생성할 때는 리턴 함수로 unsubscribe를 제공한다. 그리고 이 함수를 호출했을 때는 clearInterval(intervalID) 메서드를 호출해서 1초마다 'hi'를 보내는 동작을 중단한다. 만약 create 함수 안에서 메모리나 자원을 사용하면서 이를 해제하는 unsubscribe 함수를 리턴하지 않으면 옵저버블이 자원을 제대로 해제할 수 없다. 이러면 Subscription의 구독을 해제하려고 unsubscribe 함수를 호출하거나, 내부에서 complete 함수나 error 함수를 호출한다. 특히 error 함수를 호출할 때 자원 해제가 이루어지지 않는다. 공식적으로 제공하는 생성 함수는 이런 문제가 없도록 설계했을 것이다. 하지만 별도의 사용자 정의 연산을 구현해서 사용한다면 자원 해제 관련 부분을 신경 써야 한다. 
+
+아래의 코드는 RxJS 공식 문서 '구독' 부분에 있는 옵저버블 구독 해제 예를 버전 6으로 변환한 것이다. 처음 등장하는 interval 함수가 리턴하는 옵저버블 인스턴스는 인자로 설정한 숫자의  시간(ms 단위)마다 0부터 1씩 증가하는 정숫값을 계속 발행한다. 즉, interval 함수는 이러한 역할을 하는 옵저버블 인스턴스를 생성하는 함수다. 
+
+```js
+const { interval } = require('rxjs');
+const observable = interval(1000);
+
+// 옵저버와 함께 subscribe 함수를 호출해 옵저버블 실행
+const subscription = observable.subscribe(function(x) {
+    console.log(x);
+});
+
+// unsubscribe 함수로 구독 해제(바로 해제됨)
+subscription.unsubscribe();
+```
+
+구독하자마자 unsubscribe 함수를 호출하므로 화면에 아무것도 출력되지 않는다. interval 함수는 비동기 방식으로 동작하는데, 자바스크립트에서는 동기 방식의 동작이 끝난 후에 큐에 있는 비동기 작업을 실행하기 때문이다. 즉, 동기 방식에서 unsubscribe 함수로 구독을 해제해서 1초마다 하는 작업을 큐에서 제거한다. 따라서 이후에 아무 일도 일어나지 않는다.
+
+옵저버블의 subscribe 함수를 호출해 리턴한 subscription 변수는 Subscription 클래스의 인스턴스다. 이 클래스는 unsubscribe 함수 외에 add와 remove 함수를 제공한다. add 함수는 Subscription 객체를 추가할 수 있고, remove 함수는 이미 추가된 Subscription 객체를 제거할 수 있다. Subscription 객체 하나에 여러 Subscription 객체가 추가되었다면, 해당 Subscription 객체의 unsubscribe 함수를 호출하면 추가된 모든 Subscription 객체의 구독을 해제할 수 있다. 이러한 개념은 아래의 코드에서 확인할 수 있다. 역시 RxJS 공식 문서 '구독'에 있는 예제를 버전 6으로 수정했다.
+
+```js
+const { interval } = require('rxjs');
+const observable1 = interval(400);
+const observable2 = interval(300);
+
+const subscription = observable1.subscribe(function(x) {
+    console.log('first: ' + x);
+});
+
+const childSubscription = observable2.subscribe(function(x) {
+    console.log('second: ' + x);
+});
+
+subscription.add(childSubscription);
+
+setTimeout(function() {
+    // Subscription 객체와 하위에 있는 자식 Subscription 객체의 구독을 취소
+    subscription.unsubscribe();
+}, 1000);
+```
+
+위의 코드에서는 400ms, 300ms마다 값을 발행하는 2개 옵저버블의 subscribe 함수를 호출하여 구독한다. 처음 구독한 결과는 subscription 변수에 할당하고, 그 다음 구독하는 결과는 childSubscription 변수에 할당한다. subscription.add로 childSubscription 객체를 추가했고, unsubscribe 함수를 호출해서 모든 Subscription 인스턴스의 구독을 해제했다. add나 remove 함수를 사용할 때는 해당 Subscription 객체가 어떤 Subscription 객체까지 영향을 주는지 항상 주의해서 사용해야 한다.
+
+
+
