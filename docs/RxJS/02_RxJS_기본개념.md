@@ -473,3 +473,179 @@ _trySubscribe(sink) {
 
 앞으로 연산자를 연결할 때 연산자를 호출하는 옵저버블은 소스 옵저버블이라고 할 것이다. 
 
+### 2.4.3 배열과 비교해 본 옵저버블 연산자 예제
+
+옵저버블 객체는 여러 값을 다룰 수 있는 함수형 연산자를 제공한다. Array#extras나 로대시에서 여러 값을 처리하는 데 제공하는 함수형 프로그래밍의 연산자와 비슷하다. 여기서 모든 것을 다룰 수는 없겠지만 몇 가지 예를 소개하겠다.
+
+아래으 코드는 옵저버블 생성 예제에 map이라는 변환 연산자를 적용한 것이다.
+
+```js
+const { Observable } = require('rxjs');
+const { map } = require('rxjs/operators');
+
+const observableCreated$ = Observable.create(function(observer) {
+    observer.next(1);
+    observer.next(2);
+    observer.complete();
+});
+
+observableCreated$.pipe(
+	map(function(value) {
+        return value * 2;
+    })
+).subscribe(function next(item) {
+    console.log(item);
+});
+```
+
+실행 결과는 다음과 같다.
+
+```
+2
+4
+```
+
+위의 코드에서 다음처럼 map 연산자를 추가해 실행하면 array.map처럼 각각의 값을 변환하는 것을 확인할 수 있다.
+
+```js
+console.log([1, 2].map(function(value) {
+    return value * 2;
+}));
+```
+
+실행 결과는 다음과 같다.
+
+```
+[2, 4]
+```
+
+배열과 옵저버블에서 map 연산자를 사용하는 데 큰 차이가 없어 보인다. 하지만 옵저버블은 실제 각각의 값 처리는 구독하는 시점에 하지만 배열을 연산자를 호출할 때마다 새로운 배열을 만드므로 옵저버블이 성능상 장점이 있다. 위의 코드에 추가할 수 있는 다음 코드는 이를 확인할 수 있는 예다.
+
+```js
+console.log([1, 2]
+	.map(function(value) {
+    	return value * 2;
+	})
+	.map(function(value) {
+    	return value + 1;
+	})
+	.map(function(value) {
+  		return value * 3;  
+	})
+);
+```
+
+실행 결과는 다음과 같다.
+
+```
+[9, 15]
+```
+
+map 연산자를 한 번 호출할 때마다 같은 크기의 새로운 배열을 생성한다. 즉, map 연산자 수에 비례해 배열을 3번 생성한다. 이는 메모리 공간을 차지해 가비지 컬렉터에서 제거해야 하는 문제가 있다. 배열을 생성하는 시간 비용도 발생한다.
+
+아래의 코드는 옵저버블에서 map 연산자를 여러 번 호출하는 예다.
+
+```js
+const { Observable } = require('rxjs');
+const { map, toArray } = require('rxjs/operators');
+
+const observableCreated$ = Observable.create(function(observer) {
+    cnosole.log(`Observable BEGIN`);
+    consrt arr = [1, 2];
+    for (let i = 0; i < arr.length; i++) {
+        console.log(`current array: arr[${i}]`);
+        observer.next(arr[i]);
+    }
+    console.log(`BEFORE complete`);
+    observer.complete();
+    console.log(`Observable END`);
+});
+
+function logAndGet(original, value) {
+    console.log(`original: ${original}, map value: ${value}`);
+    return value;
+}
+
+observableCreated$.pipe(
+	map(function(value) {
+        return logAndGet(value, value * 2);
+    }),
+    map(function(value) {
+        return logAndGet(value, value + 1);
+    }),
+    map(function(value) {
+        return logAndGet(value, value * 3);
+    }),
+    toArray()
+).subscribe(function(arr) { console.log(arr); });
+```
+
+실행 결과는 다음과 같다.
+
+```
+Observable BEGIN
+current array: arr[0]
+original: 1, map value: 2
+original: 2, map value: 3
+original: 3, map value: 9
+current array: arr[1]
+original: 2, map value: 4
+original: 4, map value: 5
+original: 5, map value: 15
+BEFORE complete
+[ 9, 15 ]
+Observable END
+```
+
+map 연산자로 값을 감쌀 때마다 새로운 옵저버블 객체만 생성한다. 새로 생성한 옵저버블은 구독할 때까지 실행되지 않으므로 배열이 생성될 때처럼 실제 연산자가 동작하지 않는다. 
+
+위의 코드에서는 첫 옵저버블이 함수 안에서 시작점이 되는 첫 배열이 있다. 하지만 map 연산자를 호출할 때마다 해당 동작을 담은 새로운 옵저버블만 생성될 뿐 연산자는 배열을 사용하지 않는다. 마지막 연산자인 toArray는 값 각각을 배열에 담아 complete 함수를 호출할 때 해당 배열을 next  함수에서 사용한다. 이 동작은 구독할 때까지 일어나지 않는다.
+
+결국 위의 코드 결과는 옵저버블 구독을 하기 전까진 아무 동작도 일어나지 않다가, 구독하면 Observable BEGIN부터 Observable END까지의 모든 동작이 한 번에 실행된다. 아래의 코드는 이러한 결과가 어떤 방식으로 동작할지 약식 코드를 만든 것이다.
+
+```js
+// subscribe 호출 시 toArray에서 필요한 array 생성
+const array = [];
+
+// observableCreated 안 for문에서 observer.next(arr[i])를 호출할 때
+const aInput = arr[i];
+
+// observableCreated 안 함수에서 사용하는 시작 옵저버
+observerA.next(aInput);
+const bInput = aInput * 2;
+observerB.next(bInput);
+const cInput = bInput + 1;
+observerC.next(cInput);
+const dInput = cInput * 3;
+observerD.next(dInput);
+array.put(dInput);
+
+// observableCreated 안에서 observer.complete를 호출할 때, toArray()에서 실행되는 동작
+// subscribe 안에 있는 마지막 옵저버이기도 하다.
+observerE.next(array);
+```
+
+옵저버블의 동작 방식은 지연 실행이 가능하다는 장점이 있다. 배열은 map 연산자를 호출하는 순간 새로운 배열이 나오도록 동작이 바로 실행된다. 옵저버블은 구독하는 시점까지 실행을 미룰 수 있어 지연 실행할 수 있다. 이는 함수 호출과 비슷하다. 함수는 어떤 일을 할지만 정의하고 선언한다고 해당 함수가 동작하지는 않는다. function1() {} 처럼 선언하면 실행되지 않지만, function1(); 처럼 function1을 호출하면 그때는 함수가 실행된다. 단, 함수는 리턴 값이 1개이지만 옵저버블은 error나 complete 함수를 호출할 때까지는 next 함수로 여러 개 값을 보낼 수 있다는 차이가 있다.
+
+참고로 RxJS 공식 문서에서는 'RxJS를 이벤트를 위한 로대시로 생각'해보라고 설명한다. 로대시에서도 함수를 미리 합성한 후 마지막에 value라는 함수를 호출하면 연산자를 여러 번 감싸도 배열은 한 번만 생성하도록 사용할 수 있다. 여기서는 배열만 비교해놓아서 로대시와 큰 차이가 없다고 느낄 수 있지만 RxJS는 이러한 방식을 배열 뿐만 아니라 이벤트나 비동기 연산에도 적용할 수 있는 특징이 있다.
+
+### 2.4.4 순수 함수와 연산자의 관계
+
+함수의 부수 효과는 외부 참조뿐만 아니라 함수 안에서 입출력 동작으로 가져온 값을 이용하는 것처럼 외부의 영향을 받아 결과가 달라진다면 나타날 수 있다. 심지어 결과에 영향을 주지 않더라도 함수의 역할과 상관없는 모든 동작을 부수 효과라고 보는 시각도 있다.
+
+이럴 때 순수 함수를 잘 사용하면 장점이 있다. 하지만 현실적으로 소프트웨어를 개발할 때 입출력과 같은 부수 효과 없이 프로그래밍하기 어려우므로 순수 함수로만 개발할 수는 없다. RxJS에서 연산자는 컬렉션을 다루는 함수형 프로그래밍 스타일의 순수 함수다. 따라서 순수 함수로 소개된 RxJS의 연산자를 다룰 때는 연산자에서 사용하는 함수도 순수 함수로 하여 함수형 프로그래밍의 장점을 살리되 부수 효과가 일어나는 지점을 잘 지정해 부수 효과의 순서를 잘 관리한다면 좀 더 효율적인 프로그래밍을 할 수 있다. 
+
+RxJS에서 연산자를 순수 함수로 소개한 이유는 해당 연산자가 호출된 옵저버블 객체만 입력으로 삼아 새로운 옵저버블을 만들어 다른 외부 요소의 영향을 받지 않기 때문이다. 배열의 map 연산자도 기존 배열에서 다른 외부 변수를 참조하지 않고 새로운 배열을 만든다. 옵저버블의 연산자도 기존 옵저버블 외에 다른 영향 없이 새로운 옵저버블을 생성한다. 
+
+하지만 배열이나 옵저버블 모두 map 연산자에 순수 함수를 인자로 사용하지 않으면 어떻게 될까? 연산자에서 사용하는 함수가 외부 변수를 참조하고 해당 변숫값이 예측할 수 없도록 바뀐다. 결과도 매번 달라질 수 있어 예측이 어렵다. map 연산자 자체가 순수 함수여도 그 안에서 호출하는 함수가 순수 함수가 아니므로 순수 함수의 장점을 살릴 수 없는 것이다. 
+
+그렇다면 부수 효과는 어떻게 관리할까? 부수 효과를 유발할 수 있는 연산자는 tap 연산자로 자세히 알아보자. 
+
+## 2.5 스케줄러
+
+스케줄러는 옵저버가 옵저버블을 구독할 때 어떤 순서로 어떻게(동기/비동기 등) 실행할지 실행 컨텍스트를 관리하는 역할의 자료구조다.
+
+스케줄러도 rxjs에서 불러올 수 있다. 단일 스레드인 자바스크립트에서는 비동기 방식으로 setTimeout, setInterval 함수 또는 마이크로 큐를 이용해 실행하는 asapScheduler, asyncScheduler가 있다. 동기 방식으로는 트램폴린 방식으로 큐를 사용하는 queueScheduler가 있다. queueScheduler는 재귀 방식으로 구현했다면 콜 스택을 사용하지 않고 큐를 이용해 반복적으로 해제하는 방식을 지원한다. 따라서 재귀 호출에서 발생할 수 있는 스택 오버플로를 방지할 수 있다.
+
+일부 연산자는 스케줄러를 인자로 사용할 때도 있고, observeOn과 subscribeOn 연산자로 스케줄러를 지정할 수 있다.
+
