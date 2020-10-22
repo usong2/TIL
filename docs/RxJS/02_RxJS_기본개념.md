@@ -649,3 +649,91 @@ RxJS에서 연산자를 순수 함수로 소개한 이유는 해당 연산자가
 
 일부 연산자는 스케줄러를 인자로 사용할 때도 있고, observeOn과 subscribeOn 연산자로 스케줄러를 지정할 수 있다.
 
+## 2.6 마블 다이어그램
+
+ReactiveX 공식 문서에는 옵저버블의 연산자를 설명하는 마블 다이어그램이라는 그림을 제공한다. [RxJS Marbles](http://rxmarbles.com)에서도 확인할 수 있다.
+
+마블 다이어그램은 연산자를 쉽게 이해하는 데 도움을 주고, 개발자가 생각하는 흐름을 그림으로 도식화하는 데 유용하다. 아래의 그림은 0부터 4까지의 수 중에 홀수 값을 찾는 filter 연산자의 마블 다이어그램이다.
+
+![마블 다이어그램: filter](https://rxjs-dev.firebaseapp.com/assets/images/marble-diagrams/filter.png)
+
+마블 다이어그램을 설명하면 다음과 같다.
+
+1. 왼쪽에서 오른쪽으로 향하는 가로 줄은 시간에 따라 함수에서 발행하는 값들을 표시한다. 입력(input) 옵저버블이라고도 한다.
+2. 동그란 모양이고 그 안에 실제 값이 표시되어 있다. 이렇게 가로줄이 하나의 옵저버블이다.
+3. 제일 마지막에 있는 수직선(|)은 구독 완료(complete 함수 호출)를 의미한다.
+4. 가운데 쓰여 있는 박스는 연산자를 가리킨다.
+5. 가운데 연산자 아래 있는 옵저버블은 연산자를 이용해서 생성한 옵저버블이다. 출력(output) 옵저버블이라고도 한다. 각 값들은 색깔이나 숫자로 구분해서 어떤 입력값으로 어떤 발행 값을 만들었는지 구분할 수 있게 했다. 동그라미, 세모, 네모를 사용해서 값을 구분하기도 한다.
+6. X 표시는 에러가 발생해 옵저버블 실행을 종료했음을 뜻한다.
+
+## 2.7 프로미스와 함께 본 옵저버 콜백 및 에러 처리
+
+옵저버블의 개념을 생각하고 프로미스를 떠올린 자바스크립트 개발자도 있을 것이라 생각한다. 프로미스도 then이라는 함수를 사용하면 RxJS의 map 연산자처럼 함수를 사용해 변환할 수 있다. 또한 프로미스는 값이나 에러를 콜백 함수에 전달할 수 있다. 프로미스에 익숙한 자바스크립트 개발자가 RxJS 에러 처리 방식을 이해할 수 있도록 프로미스와 RxJS의 에러 처리 방식을 함께 살펴보자.
+
+```js
+const promise = new Promise(function(resolve, reject) {
+    resolve(1);
+});
+promise.then(function(value) {
+    console.log(value);
+});
+```
+
+프로미스 생성자에서 사용하는 함수에 resolve의 1이라는 값을 인자로 설정하는 방식으로 값 1을 전달할 수 있다. 아래의 코드는 프로미스의 에러 처리를 보여주는 예다.
+
+```js
+const promise = new Promise(function(resolve, reject) {
+    reject(new Error('error'));
+});
+promise.then(
+	function(value) {
+    	console.log(value);
+    },
+    function(error) {
+        console.error(error);
+    }
+);
+```
+
+두 번째 인자인 reject는 에러를 처리하므로 값을 전달하면 에러가 발생한다.
+
+프로미스는 1개의 값을 취급하므로 resolve든 reject든 둘 중 하나를 먼저 사용하면 then 함수로 둘 중 하나의 결과를 받을 수 있다. 위에 위의 then 함수를 이용해 resolve로 전달한 값은 첫 번째 인자에 해당하는 함수다. 위의 코드에서 reject로 에러를 전달한 것은 두 번째 인자에 해당하는 함수다.
+
+RxJS는 옵저버블에서 여러 개 값을 취급한다. 따라서 옵저버에 있는 프로미스에서 resolve 함수로 값을 전달하듯 next 함수로 값을 전달할 수 있고, 프로미스의 reject 함수처럼 옵저버에 있는 error 함수로 에러를 전달할 수 있다. 에러를 전달하면 해당 옵저버블은 구독을 종료한다. 
+
+에러 없이 실행되면 complete 함수를 호출해 구독을 종료한다. 아래의 코든느 그 예다.
+
+```js
+const { Observable } = require('rxjs');
+
+const observableCreated$ = Observable.create(function(observer) {
+    try {
+        observer.next(1);
+        observer.next(2);
+        throw("throw err test");
+    } catch (err) {
+        observer.error(err);
+    } finally {
+        observer.complete();
+    }
+});
+
+observableCreated$.subscribe(
+	function next(item) { console.log(item) },
+	function error(err) { console.log(`error: ` + err) },
+    function complete() { console.log('complete') }
+);
+```
+
+옵저버블은 옵저버로 값 1과 2를 전달한 후 에러를 발생시키고 catch문을 이용해 옵저버에 있는 error 함수로 에러를 전달한다. 만약 에러가 발생하지 않았다면 complete 함수로 완료됨을 알 수 있다. 에러가 나서 finally 안의 코드가 실행되면 complete 함수는 호출된다. 하지만 이미 error 함수를 호출했으면 해당 옵저버블의 구독이 종료되었으므로 따로 complete 함수에 해당하는 콜백을 호출하지는 않는다. 
+
+에러 처리까지 RxJS 옵저버에 있는 세 가지 콜백 함수를 모두 살펴봤다. 다음처럼 정리할 수 있다.
+
++ **next**: 다음에 전달할 값 또는 이벤트를 발생
++ **error**: 에러나 예외가 발생하면 전달받는다. 구독(subscription) 종료
++ **complete**: 정상적으로 옵저버블 구독을 완료하면 호출한다. 구독(subscription) 종료
+
+이렇게 RxJS 옵저버블에 있는 세 가지 콜백 함수를 이용해 동작한다. 여러 개의 값을 next 함수로 발행하다가 에러가 발생해 error 함수를 호출하거나 정상 종료로 complete 함수를 호출하면 구독을 종료한다. 이러한 함수가 있는 옵저버 객체와 옵저버블 객체를 어떻게 연결 및 관리하는지는 옵저버 패턴을 다시 참고하기 바란다.
+
+
+
