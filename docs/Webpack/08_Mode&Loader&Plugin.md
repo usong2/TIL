@@ -197,7 +197,7 @@ package.json 파일이 있으면 이 파일을 npm 명령어가 읽어 이 파�
 + style loader와 css loader 설치
 
   ```bash
-  $ npm install style-loader css-loader --save-ev
+  $ npm install style-loader css-loader --save-dev
   ```
 
 + webpack에 loader를 설정
@@ -439,4 +439,116 @@ package.json 파일이 있으면 이 파일을 npm 명령어가 읽어 이 파�
 
   index.html 파일을 새로고침하면 style 태그가 두개로 쪼개져 있던 것이 style 태그가 하나만 보이는 것을 확인 가능
 
+
+<br />
+
+## Plugin
+
++ 플러그인은 웹팩이 동작하는 자체적인 과정에 개입할 수 있어 웹팩이 동작하는 과정 전반적으로 여러 가지 역할을 함
+
+  + Bundle 파일에 변화를 줌
+  + 개발 모드에서 개발 편의성을 제공
+  + 프로덕션 모드에서 코드 최적화 진행
+
++ 플러그인 설정
+
+  ```js
+  module.exports = {
+      plugins: [ new Plugin({ ...option }), ... ]
+  }
+  ```
+
+### 예제
+
+#### html-webpack-plugin
+
+bundler를 위한 html 파일을 자동으로 만들어주고 설정
+
+플러그인은 로더와 다르게 웹팩 패키지 내부에 있는 플러그인과 외부 저장소에서 관리되는 플러그인으로 나뉘는데 이번에 사용할 플러그인은 외부 저장소에서 관리되는 플러그인
+
++ 설치
+
+  ```bash
+  $ npm i html-webpack-plugin -D
+  # npm install html-webpack-plugin --save-dev
+  ```
+
++ 모듈을 불러와 적용
+
+  ```js
+  const path = require("path");
+  const HtmlWebpackPlugin = require("html-webpack-plugin");
   
+  module.exports = {
+    entry: "./index.js",
+    output: {
+      filename: "bundle.js",
+      path: path.resolve(__dirname, "dist"),
+    },
+    module: {
+      rules: [
+        {
+          test: /\.css$/i,
+          use: [
+            {
+              loader: "style-loader",
+              options: {
+                injectType: "singletonStyleTag",
+              },
+            },
+            {
+              loader: "css-loader",
+              options: {
+                modules: true,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: "./template.html",
+      }),
+    ],
+    mode: "none",
+  };
+  ```
+
+  설치한 플러그인을 불러오고 plugins key에 설치한 플러그인에 대한 객체를 추가했는데 외부 저장소에서 관리되는 플러그인은 loader와 마찬가지로 각각의 저장소의 README에서 어떤 옵션을 설정할 수 있는지 기록이 되어 있기 때문에 자세히 확인 가능
+
+  template이라는 key를 먼저 사용할 예정인데 이는 자동으로 생성되는 html 문서가 특정 파일을 기준으로 만들어지게끔 파일을 지정해주는 역할을 함
+
+  template key에 지정된 파일을 이용해서 html 문서가 자동으로 생성되는 것인데 template을 설정하기 위해 기존에 만들어진 index.html 파일을 template.html 파일로 변경하여 플러그인 객체에 template.html 파일 경로를 지정함
+
++ index.html -> template.html
+
+  ```html
+  <!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Webpack Practice</title>
+  </head>
+  <body>
+  </body>
+  </html>
+  ```
+
++ html 파일 생성 확인
+
+  ```bash
+  $ npm run build
+  ```
+
+  dist 폴더 내에 index.html 파일 생성을 확인 가능
+
+  이전에 웹팩 설정 파일에서 output key에 bundle 파일에 어디에 위치해 있고 파일 이름을 무엇으로 할 지에 대해서 설정했었는데 생성된 html 파일은 output의 정보들을 이용해서 bundle된 리소스들을 불러올 수 있도록 script 태그나 link 태그를 추가해 줌 
+
+  그러므로 **직접 script 파일을 사용해서 bundle 파일의 경로를 지정할 필요가 없어짐**
+
+  template.html에서 기존의 bundle 파일을 불러오는 script를 제거해주었지만 새로 생성된 html 파일에서는 script가 자동으로 추가된 것을 확인 할 수 있음
+
+  또 웹팩의 설정 내용이 바뀌면 그대로 html 파일도 업데이트가 되기 때문에 개발 중에 신경써야 하는 부분들이 조금 줄게 됨
+
