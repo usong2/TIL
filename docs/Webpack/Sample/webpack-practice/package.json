@@ -11,6 +11,8 @@
   "license": "ISC",
   "devDependencies": {
     "css-loader": "5.0.1",
+    "handlebars": "4.7.6",
+    "handlebars-loader": "1.7.1",
     "html-webpack-plugin": "4.5.1",
     "style-loader": "2.0.0",
     "webpack": "5.16.0",

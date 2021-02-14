@@ -26,11 +26,19 @@ module.exports = {
           },
         ],
       },
+      {
+        test: /\.hbs$/,
+        use: ["handlebars-loader"],
+      },
     ],
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "./template.html",
+      title: "Webpack",
+      template: "./template.hbs",
+      meta: {
+        viewport: "width=device-width, initial-scale=1.0",
+      },
     }),
   ],
   mode: "none",
